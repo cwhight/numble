@@ -9,7 +9,6 @@
     "build": "webpack --config webpack.prod.js",
     "build:docker": "webpack --config webpack.prod.js",
     "start": "webpack-dev-server --config webpack.config.js",
-    "start:docker": "webpack-dev-server --config webpack.dev.js --host 0.0.0.0",
     "lint": "eslint --ext .tsx --no-error-on-unmatched-pattern",
     "clean": "rm -rf reports"
   },
