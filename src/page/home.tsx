@@ -36,10 +36,7 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
     async fetchUsers() {
         try {
             this.setState({...this.state, isFetching: true});
-            const response = await axios.get("https://numble-game.herokuapp.com/numbers", {headers: {
-                    "Access-Control-Request-Headers": true,
-                    "Access-Control-Request-Origin": "*"
-                }});
+            const response = await axios.get("https://numble-game.herokuapp.com/numbers");
             this.setState({numbers: response.data, isFetching: false});
             console.log(response.data)
         } catch (e) {
