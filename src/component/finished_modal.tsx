@@ -21,16 +21,16 @@ export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModal
         <Button className={"btn"}>I've done my Best</Button>
     </div>
 
-    return <Modal ariaHideApp={false}
+    return <Modal
                   show={show}
                   aria-labelledby="contained-modal-title-vcenter"
                   contentLabel="Example Modal">
-        <div className={"p-3 h-75 d-flex flex-column align-items-center justify-content-around"}>
-            <h1 className={"grey-text"}>You have finished</h1>
-            <div>
-                {message}
-            </div>
-            {buttons}
-        </div>
-    </Modal>
+                <div className={"p-3 h-75 d-flex flex-column align-items-center justify-content-around"}>
+                    <h1 className={"grey-text"}>You have finished</h1>
+                    <div>
+                        {message}
+                    </div>
+                    {buttons}
+                </div>
+            </Modal>
 }

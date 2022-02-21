@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import {Col, Container, Row} from "react-bootstrap";
 import {Number} from "./number";
 import {Action} from "./action";
@@ -7,6 +7,7 @@ import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
 import {getRandomArbitrary} from "../utils/number";
 import store from "../redux/store";
+import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 
 function isNumber(item: any) {
     return !!item.match(/[0-9]+/);
@@ -18,6 +19,7 @@ interface finished {
 }
 
 interface KeyPadProps {
+    isFinished: any
     bigNums: number[]
     smallNums: number[]
     target: number
@@ -57,6 +59,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             operation: null,
         });
     }, []);
+
+    const gameOver = () => {
+
+    }
 
     const clear = () => {
         setTotals({
@@ -139,16 +145,71 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         }
     };
 
+    const renderTime = ({remainingTime}: any) => {
+        const currentTime = useRef(remainingTime);
+        const prevTime = useRef(null);
+        const isNewTimeFirstTick = useRef(false);
+        const [, setOneLastRerender] = useState(0);
+
+        if (currentTime.current !== remainingTime) {
+            isNewTimeFirstTick.current = true;
+            prevTime.current = currentTime.current;
+            currentTime.current = remainingTime;
+        } else {
+            isNewTimeFirstTick.current = false;
+        }
+
+        // force one last re-render when the time is over to tirgger the last animation
+        if (remainingTime === 0) {
+            setTimeout(() => {
+                setOneLastRerender((val) => val + 1);
+            }, 20);
+        }
+
+        const isTimeUp = isNewTimeFirstTick.current;
+
+        return (
+            <div className="time-wrapper">
+                <div key={remainingTime} className={`time ${isTimeUp ? "up" : ""}`}>
+                    {remainingTime}
+                </div>
+                {prevTime.current !== null && (
+                    <div
+                        key={prevTime.current}
+                        className={`time ${!isTimeUp ? "down" : ""}`}
+                    >
+                        {prevTime.current}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     var newNums = numbers.map((num, i) => {
         return <Number onClick={() => handleClick(num.toString(), 7 + i)} value={num} used={usedKeys.includes(7 + i)}/>
     })
 
     // var modal = finished.finished ? <FinishedModal success={finished.success}/> : null
     const form =
-        <Container className={"full-height"}>
-            <FinishedModal clear={() => clear()} show={finished.finished} success={finished.success}/>
-            <div>{totals.next}</div>
-            <Row className={"full-height justify-content-center align-items-center"}>
+        <Container className={"full-height d-flex flex-column justify-content-around"}>
+            <Row className={"justify-content-center align-items-center"}>
+                <h1 className={"page-title"}>Numble</h1>
+            </Row>
+            <Row className={"justify-content-center align-items-center"}>
+                <FinishedModal clear={() => clear()} show={finished.finished} success={finished.success}/>
+                <div className="timer-wrapper">
+                    <CountdownCircleTimer
+                        isPlaying
+                        duration={60}
+                        colors={['#004777', '#F7B801', '#A30000', '#A30000']}
+                        colorsTime={[45, 30, 10, 0]}
+                        onComplete={(time:number) => setIsFinished({finished: true, success: false})}
+                    >
+                        {renderTime}
+                    </CountdownCircleTimer>
+                </div>
+            </Row>
+            <Row className={"justify-content-center align-items-center"}>
                 <Col sm={12} lg={6} className={"d-flex h-100 align-items-center"}>
                     <div className="p-3 calculator-container">
                         <div className={"p-3 text-center my-1 mx-2"}>
