@@ -27,6 +27,7 @@ export interface score {
 }
 
 interface KeyPadProps {
+    userId: string
     scores: score
     saveScores: (success: boolean, timeRemaining: number) => void
     bigNums: number[]
@@ -36,7 +37,7 @@ interface KeyPadProps {
 
 export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
-    const {bigNums, smallNums, target, saveScores} = props
+    const {bigNums, smallNums, target, saveScores, userId} = props
     let scores = props.scores
     // const data = store().getState()
     // const [input, setIsInput] = useState("");
@@ -102,7 +103,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         console.log("HELLLOOOOO")
         try {
             const timeTaken = success ? 60 - timeRemaining : 61
-            const body = {user_id: "", time_taken: timeTaken}
+            const body = {user_id: userId, time_taken: timeTaken}
             const response = await axios.post("https://numble-game.herokuapp.com/scores", body)
             // this.setState({scores: setScores(response.data.scores), hasUpToDateScores: true});
         } catch (e) {

@@ -22,7 +22,9 @@ interface numbers {
 
 function setScores(data: number[]): score {
     const gamesPlayed = data.length
-    const bestTime = data.sort(function (a, b) {  return a - b;  })[0]
+    const bestTime = data.sort(function (a, b) {
+        return a - b;
+    })[0]
     let gamesWon = 0
     let total = 0
     data.forEach((time) => {
@@ -120,7 +122,9 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
     render() {
         return (
 
-            <KeyPad scores={this.state.scores} saveScores={() => this.saveScores} bigNums={this.state.numbers.bigNums}
+            <KeyPad userId={
+                this.state.user
+            } scores={this.state.scores} saveScores={() => this.saveScores} bigNums={this.state.numbers.bigNums}
                     smallNums={this.state.numbers.smallNums} target={this.state.numbers.target}/>
         );
     }
