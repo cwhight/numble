@@ -8,6 +8,7 @@ import {FinishedModal} from "./finished_modal";
 import {getRandomArbitrary} from "../utils/number";
 import store from "../redux/store";
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
+import axios from "axios";
 
 function isNumber(item: any) {
     return !!item.match(/[0-9]+/);
@@ -18,8 +19,16 @@ interface finished {
     success: boolean
 }
 
+export interface score {
+    gamesWon: number
+    gamesPlayed: number
+    averageTime: number
+    bestTime: number
+}
+
 interface KeyPadProps {
-    isFinished: any
+    scores: score
+    saveScores: (success: boolean, timeRemaining: number) => void
     bigNums: number[]
     smallNums: number[]
     target: number
@@ -27,7 +36,8 @@ interface KeyPadProps {
 
 export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
-    const {bigNums, smallNums, target} = props
+    const {bigNums, smallNums, target, saveScores} = props
+    let scores = props.scores
     // const data = store().getState()
     // const [input, setIsInput] = useState("");
 
@@ -35,12 +45,11 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const [usedKeys, setUsedKeys] = useState<number[]>([])
 
+    const [timeRemaining, setTimeRemaining] = useState<number>(60)
 
     const [finished, setIsFinished] = useState<finished>({finished: false, success: false})
 
     // const target = getRandomArbitrary(101, 999)
-
-    const bigs = [50,75,25,125,150,100];
 
     const big1 = bigNums[0]
     const big2 = bigNums[1]
@@ -60,8 +69,14 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         });
     }, []);
 
-    const gameOver = () => {
 
+    const gameOver = () => {
+        saveScore(finished.success, timeRemaining)
+    }
+
+    const timeUp = () => {
+        setIsFinished({finished: true, success: false})
+        saveScores(finished.success, timeRemaining)
     }
 
     const clear = () => {
@@ -78,7 +93,23 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             success: false
         })
     }
-
+    const saveScore = async (success: boolean, timeRemaining: number): Promise<void>  => {
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        try {
+            const timeTaken = success ? 60 - timeRemaining : 61
+            const body = {user_id: "", time_taken: timeTaken}
+            const response = await axios.post("https://numble-game.herokuapp.com/scores", body)
+            // this.setState({scores: setScores(response.data.scores), hasUpToDateScores: true});
+        } catch (e) {
+            console.log(e)
+            // this.setState({...this.state, isFetching: false});
+        }
+    }
     const handleClick = (value: string, key?: number) => {
         if (value == "AC") {
             clear()
@@ -121,6 +152,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     finished: true,
                     success: true
                 })
+                gameOver()
                 return
             }
 
@@ -132,12 +164,12 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                 next: null,
                 operation: null,
             })
-            if (usedKeys.length >= (6 + newNums.length)) {
-                setIsFinished({
-                    finished: true,
-                    success: false
-                })
-            }
+            // if (usedKeys.length >= (6 + newNums.length)) {
+            //     setIsFinished({
+            //         finished: true,
+            //         success: false
+            //     })
+            // }
         }
         if (key != null) {
             usedKeys.push(key)
@@ -146,6 +178,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     };
 
     const renderTime = ({remainingTime}: any) => {
+        setTimeRemaining(remainingTime)
         const currentTime = useRef(remainingTime);
         const prevTime = useRef(null);
         const isNewTimeFirstTick = useRef(false);
@@ -196,14 +229,14 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                 <h1 className={"page-title"}>Numble</h1>
             </Row>
             <Row className={"justify-content-center align-items-center"}>
-                <FinishedModal clear={() => clear()} show={finished.finished} success={finished.success}/>
+                <FinishedModal timeTaken={60-timeRemaining} score={scores} clear={() => clear()} show={finished.finished} success={finished.success}/>
                 <div className="timer-wrapper">
                     <CountdownCircleTimer
-                        isPlaying
+                        isPlaying={!finished.finished}
                         duration={60}
                         colors={['#004777', '#F7B801', '#A30000', '#A30000']}
                         colorsTime={[45, 30, 10, 0]}
-                        onComplete={(time:number) => setIsFinished({finished: true, success: false})}
+                        onComplete={(time:number) => timeUp()}
                     >
                         {renderTime}
                     </CountdownCircleTimer>

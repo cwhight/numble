@@ -1,13 +1,13 @@
 import React from "react";
 import {Link, RouteComponentProps} from "@reach/router";
 import Cookies from 'js-cookie';
-import {KeyPad} from "../component/keypad";
+import {KeyPad, score} from "../component/keypad";
 import axios from "axios"
 import {v4 as uuidv4} from 'uuid';
 
 
 interface HomeProps {
-    scores: scores
+    scores: score
     hasUpToDateScores: boolean
     user: string
     numbers: numbers
@@ -20,9 +20,24 @@ interface numbers {
     target: number
 }
 
-interface scores {
-    streak: number
-    averageTime: number
+function setScores(data: number[]): score {
+    const gamesPlayed = data.length
+    const bestTime = data.sort(function (a, b) {  return a - b;  })[0]
+    let gamesWon = 0
+    let total = 0
+    data.forEach((time) => {
+        if (time != 61) {
+            gamesWon += 1
+            total += time
+        }
+    })
+    const averageTime = Math.floor(total / gamesWon)
+    return {
+        gamesPlayed,
+        bestTime,
+        gamesWon,
+        averageTime
+    }
 }
 
 export class Home extends React.Component<RouteComponentProps, HomeProps> {
@@ -39,8 +54,10 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
 
         this.state = {
             scores: {
-                streak: null,
-                averageTime: null
+                averageTime: null,
+                bestTime: null,
+                gamesWon: null,
+                gamesPlayed: null
             },
             hasUpToDateScores: false,
             user: userId,
@@ -61,8 +78,10 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
     async fetchScores() {
         try {
             this.setState({...this.state, isFetching: true});
-            const response = await axios.get("https://numble-game.herokuapp.com/scores?id=" + this.state.user);
-            this.setState({scores: response.data, hasUpToDateScores: true});
+            const response = await axios.get("https://numble-game.herokuapp.com/scores?user_id=" + this.state.user);
+
+
+            this.setState({scores: setScores(response.data.scores), hasUpToDateScores: true});
         } catch (e) {
             console.log(e);
             this.setState({...this.state, isFetching: false});
@@ -81,18 +100,27 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
     };
 
     async saveScores(success: boolean, timeRemaining: number) {
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
+        console.log("HELLLOOOOO")
         try {
-            const body = {userId: this.state.user, success: success, timeTaken: 60 - timeRemaining}
+            const timeTaken = success ? 60 - timeRemaining : 61
+            const body = {user_id: this.state.user, time_taken: timeTaken}
             const response = await axios.post("https://numble-game.herokuapp.com/scores", body)
-
+            this.setState({scores: setScores(response.data.scores), hasUpToDateScores: true});
         } catch (e) {
             console.log(e)
+            this.setState({...this.state, isFetching: false});
         }
     }
 
     render() {
         return (
-            <KeyPad isFinished={() => this.saveScores} bigNums={this.state.numbers.bigNums}
+
+            <KeyPad scores={this.state.scores} saveScores={() => this.saveScores} bigNums={this.state.numbers.bigNums}
                     smallNums={this.state.numbers.smallNums} target={this.state.numbers.target}/>
         );
     }
