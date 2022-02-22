@@ -49,7 +49,7 @@ export default function calculate(obj: any, buttonName: any) {
             };
         }
         // '=' with no operation, nothing to do
-        return {};
+        return { ...obj };
     }
 
     // User pressed an operation after pressing '='

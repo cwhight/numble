@@ -124,7 +124,7 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
 
             <KeyPad userId={
                 this.state.user
-            } scores={this.state.scores} saveScores={() => this.saveScores} bigNums={this.state.numbers.bigNums}
+            } saveScores={() => this.saveScores} bigNums={this.state.numbers.bigNums}
                     smallNums={this.state.numbers.smallNums} target={this.state.numbers.target}/>
         );
     }

@@ -2,13 +2,14 @@ import React from "react";
 import {ButtonProps} from "react-bootstrap";
 
 export interface NumberProps extends ButtonProps {
+    isPlaying: boolean
     onClick?: any
     value: number
     used: boolean
 }
 
 export const Number: React.FC<NumberProps> = (props: NumberProps) => {
-    var {value, used, onClick} = props
+    var {value, used, onClick, isPlaying} = props
 
     const click = () => {
         if (!used) {
@@ -16,5 +17,5 @@ export const Number: React.FC<NumberProps> = (props: NumberProps) => {
         }
     }
 
-    return <button onClick={click} className={`btn clickable p-3 m-1 ${used ? "used" : ""}`}>{value}</button>
+    return <button onClick={click} className={`btn clickable p-3 m-1 ${used ? "used" : ""}`}>{ isPlaying ? value : "?"}</button>
 }
