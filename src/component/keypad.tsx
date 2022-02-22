@@ -249,7 +249,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     };
 
     let newNums = numbers.map((num, i) => {
-        return <Number isPlaying={isPlaying} onClick={() => handleClick(num.toString(), 7 + i)} value={num} used={usedKeys.includes(7 + i)}/>
+        return <Number newNum={true} big={false} isPlaying={isPlaying} onClick={() => handleClick(num.toString(), 7 + i)} value={num} used={usedKeys.includes(7 + i)}/>
     })
 
     const [hasBeenPaused, setHasBeenPaused] = useState<boolean>(false)
@@ -270,7 +270,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     // var modal = finished.finished ? <FinishedModal success={finished.success}/> : null
     const form =
-        <Container className={"full-height d-flex flex-column justify-content-around"}>
+        <div className={"full-height d-flex flex-column justify-content-around"}>
             <Row className={"justify-content-center align-items-center"}>
                 <h1 className={"page-title"}>Numble</h1>
             </Row>
@@ -287,46 +287,51 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         {renderTime}
                     </CountdownCircleTimer>
                 </div>
-                <Button onClick={()=>play()}>{isPlaying ? "Pause" : "Play"}</Button>
+                <button className={"m-3 clickable"} onClick={()=>play()}>{isPlaying ? "Pause" : "Play"}</button>
             </Row>
             <Row className={"justify-content-center align-items-center"}>
-                <Col sm={12} lg={6} className={"d-flex h-100 align-items-center"}>
+                <div className={"d-flex justify-content-between h-100 align-items-center"}>
                     <div className="p-3 calculator-container">
                         <div className={"p-3 text-center my-1 mx-2"}>
-                            <h1>{isPlaying ? target : "?"}</h1>
+                            <h1 className={"target"}>{isPlaying ? target : "?"}</h1>
                         </div>
                         <Working totals={totals}/>
-                        <div className={"d-flex justify-content-around"}>
-                            {newNums}
-                        </div>
-                        <div className={"d-flex justify-content-around"}>
-                            <Number isPlaying={isPlaying} onClick={() => handleClick(big1.toString(), 1)} value={big1} used={usedKeys.includes(1)}/>
-                            <Number isPlaying={isPlaying} onClick={() => handleClick(big2.toString(), 2)} value={big2} used={usedKeys.includes(2)}/>
-                            <Number isPlaying={isPlaying} onClick={() => handleClick(small1.toString(), 3)} value={small1} used={usedKeys.includes(3)}/>
-                        </div>
-                        <div className={"mb-3 d-flex justify-content-around"}>
-                            <Number isPlaying={isPlaying} onClick={() => handleClick(small2.toString(), 4)} value={small2} used={usedKeys.includes(4)}/>
-                            <Number isPlaying={isPlaying} onClick={() => handleClick(small3.toString(), 5)} value={small3} used={usedKeys.includes(5)}/>
-                            <Number isPlaying={isPlaying} onClick={() => handleClick(small4.toString(), 6)} value={small4} used={usedKeys.includes(6)}/>
-                        </div>
-                        <div className={"d-flex justify-content-around"}>
-                            <Action onClick={() => handleClick("x")} method={"x"}/>
-                            <Action onClick={() => handleClick("÷")} method={"÷"}/>
-                        </div>
-                        <div className={"d-flex justify-content-around"}>
-                            <Action onClick={() => handleClick("+")} method={"+"}/>
-                            <Action onClick={() => handleClick("-")} method={"-"}/>
-                        </div>
-                        <div className={"d-flex justify-content-stretch align-items-stretch"}>
-                            <Action onClick={() => handleClick("=")} method={"="}/>
-                            <Action onClick={() => handleClick("AC")} method={"AC"}/>
-                            <Action onClick={() => handleClick("<-")} method={"<-"}/>
+                        <div className={"w-100 keypad d-flex flex-column justify-content-around"}>
+                            <div>
+                                <div className={"d-flex justify-content-end"}>
+                                    {newNums}
+                                </div>
+                                <div className={"d-flex justify-content-around"}>
+                                    <Number newNum={false} big={true} isPlaying={isPlaying} onClick={() => handleClick(big1.toString(), 1)} value={big1} used={usedKeys.includes(1)}/>
+                                    <Number newNum={false} big={true} isPlaying={isPlaying} onClick={() => handleClick(big2.toString(), 2)} value={big2} used={usedKeys.includes(2)}/>
+                                    <Number newNum={false} big={false} isPlaying={isPlaying} onClick={() => handleClick(small1.toString(), 3)} value={small1} used={usedKeys.includes(3)}/>
+                                    <Number newNum={false} big={false} isPlaying={isPlaying} onClick={() => handleClick(small2.toString(), 4)} value={small2} used={usedKeys.includes(4)}/>
+                                    <Number newNum={false} big={false} isPlaying={isPlaying} onClick={() => handleClick(small3.toString(), 5)} value={small3} used={usedKeys.includes(5)}/>
+                                    <Number newNum={false} big={false} isPlaying={isPlaying} onClick={() => handleClick(small4.toString(), 6)} value={small4} used={usedKeys.includes(6)}/>
+                                </div>
+                            </div>
+
+                                <div className={"mb-3 d-flex flex-column justify-content-around"}>
+                                    <div className={"d-flex justify-content-around"}>
+                                        <Action onClick={() => handleClick("x")} method={"x"}/>
+                                        <Action onClick={() => handleClick("÷")} method={"÷"}/>
+                                        <Action onClick={() => handleClick("+")} method={"+"}/>
+                                        <Action onClick={() => handleClick("-")} method={"-"}/>
+                                    </div>
+                                    <div className={"d-flex justify-content-around"}>
+                                        <Action onClick={() => handleClick("=")} method={"="}/>
+                                    </div>
+                                </div>
+                                <div className={"d-flex justify-content-stretch align-items-stretch"}>
+                                    <Action onClick={() => handleClick("<-")} method={"<-"}/>
+                                    <Action onClick={() => handleClick("AC")} method={"Reset"}/>
+                                </div>
                         </div>
                     </div>
 
-                </Col>
+                </div>
             </Row>
-        </Container>
+        </div>
 
     return form
 }

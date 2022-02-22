@@ -9,8 +9,12 @@ body {
   margin: 50px 30px 30px;
 }
 
+.target {
+  font-size: 5rem;
+}
+
 h1 {
-  color: antiquewhite;
+  color: #454545;
   font-family: Yusei Magic, sans-serif;
 }
 
@@ -27,27 +31,52 @@ h2 {
   width: 50%
 }
 
+.keypad {
+  height: 50vh
+}
+
 .equals {
   width: 100%
 }
 
 .clickable {
-  background-color: #454545;
+  //background: hsl(340deg 100% 32%);
+  border-radius: 12px;
+  border: none;
+  font-size:4rem;
+  padding: 0;
+  cursor: pointer;
+  outline-offset: 4px;
+  background-color: #666666;
   color: antiquewhite;
-  width: 50%
+  width: 50%;
+  height: auto;
+  min-height: 6vh;
+}
+
+
+
+.newNum {
+  background-color: green !important;
+}
+
+.bigNum {
+  background-color: green !important;
+}
+
+.smallNum {
+  background-color: green !important;
+}
+
+.clickable:active .front {
+  transform: translateY(-2px);
 }
 
 .clickable:hover {
-  background-color: antiquewhite;
-  color: #454545;
+  transform: translateY(-2px);
   cursor: pointer;
 }
 
-.number {
-  background-color: aliceblue;
-  color: aqua;
-  width: 90%;
-}
 
 .letsStyle {
   color: white;
@@ -56,10 +85,10 @@ h2 {
 }
 
 .calculator-container {
-  background: rgb(25, 52, 136);
-  background: -moz-linear-gradient(0deg, rgba(25, 52, 136, 1) 0%, rgba(146, 77, 168, 1) 100%);
-  background: -webkit-linear-gradient(0deg, rgba(25, 52, 136, 1) 0%, rgba(146, 77, 168, 1) 100%);
-  background: linear-gradient(0deg, rgba(25, 52, 136, 1) 0%, rgba(146, 77, 168, 1) 100%);
+  //background: rgb(25, 52, 136);
+  //background: -moz-linear-gradient(0deg, rgba(25, 52, 136, 1) 0%, rgba(146, 77, 168, 1) 100%);
+  //background: -webkit-linear-gradient(0deg, rgba(25, 52, 136, 1) 0%, rgba(146, 77, 168, 1) 100%);
+  //background: linear-gradient(0deg, rgba(25, 52, 136, 1) 0%, rgba(146, 77, 168, 1) 100%);
   /* stylelint-disable-next-line */
   filter: progid:dximagetransform.microsoft.gradient(startColorstr="#193488", endColorstr="#924da8", GradientType=1);
   color: white;
@@ -68,7 +97,7 @@ h2 {
   display: grid;
   grid-template-rows: 1fr 4fr 1fr;
   border-radius: 2rem;
-  box-shadow: 13px 13px 20px rgb(0, 0, 0);
+  //box-shadow: 13px 13px 20px rgb(0, 0, 0);
 }
 
 .full-height {
@@ -77,11 +106,12 @@ h2 {
 .display {
   display: flex;
   background-color: transparent;
-  color: white;
-  font-size: 2.3rem;
+  color: lightcoral;
+  font-size: 6rem;
   align-items: center;
   justify-content: flex-end;
   padding-right: 1.5rem;
+  min-height: 10rem;
 }
 
 .total {
@@ -89,8 +119,7 @@ h2 {
 }
 
 .hint {
-  font-size: 1.3rem;
-  align-self: flex-start;
+  font-size: 4rem;
   padding: 1.4rem;
   margin-right: auto;
 }
@@ -118,11 +147,6 @@ button {
   font-weight: 600;
 }
 
-.btn {
-  font-size: 1.3rem;
-  background: rgba(0, 0, 0, 0.5);
-}
-
 .btn:hover {
   background: rgba(0, 0, 0, 0.7);
   cursor: pointer;
@@ -130,8 +154,8 @@ button {
 
 .used {
   background: rgba(0, 0, 0, 0.7) !important;
+  color: darkgray;
   cursor: auto !important;
-  color: #454545 !important;
 }
 
 
@@ -149,7 +173,6 @@ button {
 
 @media only screen and (max-device-width: 480px) {
   .calculator-container {
-    max-width: 80vw;
     max-height: 120vw;
   }
 }
