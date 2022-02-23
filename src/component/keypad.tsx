@@ -1,14 +1,15 @@
 import React, {useEffect, useRef, useState} from "react"
-import {Button, Col, Container, Row} from "react-bootstrap";
+import {Row} from "react-bootstrap";
 import {Number} from "./number";
 import {Action} from "./action";
 import {Working} from "./working";
 import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
-import {getRandomArbitrary} from "../utils/number";
-import store from "../redux/store";
-import { CountdownCircleTimer } from 'react-countdown-circle-timer'
-import axios from "axios";
+import {CountdownCircleTimer} from 'react-countdown-circle-timer'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faDivide, faEquals, faMinus, faMultiply, faPlus, faRefresh, faUndo} from '@fortawesome/free-solid-svg-icons'
+import Pause from "./pause";
+import Play from "./plat";
 
 function isNumber(item: any) {
     return !!item.match(/[0-9]+/);
@@ -276,7 +277,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             </Row>
             <Row className={"justify-content-center align-items-center"}>
                 <FinishedModal timeTaken={60-timeRemaining} score={scores} clear={() => clear()} show={finished.finished} success={finished.success}/>
-                <div className="timer-wrapper">
+                <div className="timer-wrapper mb-3">
                     <CountdownCircleTimer
                         isPlaying={isPlaying}
                         duration={duration}
@@ -287,7 +288,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         {renderTime}
                     </CountdownCircleTimer>
                 </div>
-                <button className={"m-3 clickable"} onClick={()=>play()}>{isPlaying ? "Pause" : "Play"}</button>
+                    <div className="player d-flex justify-content-around ml-2 my-3"
+                         style={{
+                             border: "none",
+                             cursor: "pointer",
+                             height: 100,
+                             outline: "none",
+                             borderRadius: "100%",
+                             width: 100
+                         }}>
+                        {isPlaying ? <Pause onPlayerClick={() => play()} /> : <Play onPlayerClick={() => play()} />}
+                    </div>
             </Row>
             <Row className={"justify-content-center align-items-center"}>
                 <div className={"d-flex justify-content-between h-100 align-items-center"}>
@@ -312,19 +323,19 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                             </div>
 
                                 <div className={"mb-3 d-flex flex-column justify-content-around"}>
-                                    <div className={"d-flex justify-content-around"}>
-                                        <Action onClick={() => handleClick("x")} method={"x"}/>
-                                        <Action onClick={() => handleClick("÷")} method={"÷"}/>
-                                        <Action onClick={() => handleClick("+")} method={"+"}/>
-                                        <Action onClick={() => handleClick("-")} method={"-"}/>
+                                    <div className={"d-flex justify-content-between"}>
+                                        <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon icon={faPlus} /></button>
+                                        <button className={"round-clickable"} onClick={() => handleClick("-")}><FontAwesomeIcon icon={faMinus} /></button>
+                                        <button className={"round-clickable"} onClick={() => handleClick("x")}><FontAwesomeIcon icon={faMultiply} /></button>
+                                        <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon icon={faDivide} /></button>
                                     </div>
-                                    <div className={"d-flex justify-content-around"}>
-                                        <Action onClick={() => handleClick("=")} method={"="}/>
+                                    <div className={"d-flex mt-3 justify-content-around"}>
+                                        <button className={"round-clickable w-100"} onClick={() => handleClick("=")}><FontAwesomeIcon icon={faEquals} /></button>
                                     </div>
                                 </div>
                                 <div className={"d-flex justify-content-stretch align-items-stretch"}>
-                                    <Action onClick={() => handleClick("<-")} method={"<-"}/>
-                                    <Action onClick={() => handleClick("AC")} method={"Reset"}/>
+                                        <button className={"round-clickable"} onClick={() => handleClick("<-")}><FontAwesomeIcon icon={faUndo} /></button>
+                                        <button className={"round-clickable mx-3"} onClick={() => handleClick("AC")}><FontAwesomeIcon icon={faRefresh} /></button>
                                 </div>
                         </div>
                     </div>

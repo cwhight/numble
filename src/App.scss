@@ -19,7 +19,7 @@ h1 {
 }
 
 h2 {
-  color: #FE4A49;
+  color: #071108;
   font-family: Yusei Magic, sans-serif;
 }
 
@@ -48,8 +48,23 @@ h2 {
   cursor: pointer;
   outline-offset: 4px;
   background-color: #666666;
-  color: antiquewhite;
-  width: 50%;
+  color: whitesmoke;
+  width: 16%;
+  height: auto;
+  min-height: 6vh;
+}
+
+.round-clickable {
+  //background: hsl(340deg 100% 32%);
+  border-radius: 12px;
+  border: #666666 solid;
+  color: #666666;
+  font-size:4rem;
+  padding: 0;
+  cursor: pointer;
+  outline-offset: 4px;
+  background-color: transparent;
+  width: 16%;
   height: auto;
   min-height: 6vh;
 }
@@ -57,15 +72,15 @@ h2 {
 
 
 .newNum {
-  background-color: green !important;
+  background-color: #2589BD !important;
 }
 
 .bigNum {
-  background-color: green !important;
+  background-color: #f4b942 !important;
 }
 
 .smallNum {
-  background-color: green !important;
+  background-color: #7BC950 !important;
 }
 
 .clickable:active .front {
@@ -106,7 +121,7 @@ h2 {
 .display {
   display: flex;
   background-color: transparent;
-  color: lightcoral;
+  color: #071108;
   font-size: 6rem;
   align-items: center;
   justify-content: flex-end;
@@ -130,7 +145,7 @@ h2 {
 }
 
 .button-grid:nth-child(4n) {
-  background-color: #454ed4;
+  background-color: #454545;
 }
 
 .bottom-container {
@@ -158,10 +173,6 @@ button {
   cursor: auto !important;
 }
 
-
-.orange {
-  background-color: #454ed4;
-}
 
 .zero {
   border-bottom-left-radius: 2rem;
@@ -236,5 +247,5 @@ h1 {
 
 .page-title {
   font-size: 5rem;
-  color: #454ed4;
+  color: #071108;
 }
