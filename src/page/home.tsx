@@ -6,6 +6,7 @@ import axios from "axios"
 import {v4 as uuidv4} from 'uuid';
 import Header from "../component/header";
 import {FirstModal} from "../component/first_modal";
+import {ScoresModal} from "../component/scores";
 
 
 interface HomeProps {
@@ -15,6 +16,7 @@ interface HomeProps {
     numbers: numbers
     isFetching: boolean
     showModal: boolean
+    showScoresModal: boolean
 }
 
 interface numbers {
@@ -67,7 +69,8 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
                 smallNums: [],
                 target: null
             },
-            showModal: true
+            showModal: true,
+            showScoresModal: false
         };
     }
 
@@ -115,11 +118,16 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
         this.setState({showModal: !this.state.showModal})
     }
 
+    showScoresModal() {
+        this.setState({showScoresModal: !this.state.showScoresModal})
+    }
+
     render() {
         return (
             <div>
-                <Header onClick={() => this.showModal()} />
+                <Header showScores={() => this.showScoresModal()}showRules={() => this.showModal()}/>
                 <FirstModal close={()=> this.setState({showModal: false})} show={this.state.showModal} />
+                <ScoresModal scores={this.state.scores} close={()=> this.setState({showScoresModal: false})} show={this.state.showScoresModal} />
                 <KeyPad showClock={!this.state.showModal} userId={
                     this.state.user
                 } bigNums={this.state.numbers.bigNums}

@@ -29,30 +29,36 @@ body {
   .game-wrapper {
     max-width: 400px !important;
   }
-  .clickable {
-    font-size: 1.5rem !important;
-    margin-left: 3px !important;
-    margin-right: 3px !important;
-    width: 60px !important;
-  }
 
-  .round-clickable {
-    font-size: 1.5rem !important;
-  }
+}
+.clickable {
+  font-size: 1.5rem !important;
 
-  h1 {
-    font-size: 2rem !important;
-  }
-  .display {
-    font-size: 2rem !important;
-  }
-  .result-modal {
-    min-height: 50vh !important;
-    width: 400px !important;
-  }
-  .play {
-    font-size: 3rem !important;
-  }
+  width: 16% !important;
+}
+
+.round-clickable {
+  font-size: 1.5rem !important;
+}
+
+h1 {
+  font-size: 2rem !important;
+}
+.display {
+  font-size: 2rem !important;
+}
+.result-modal {
+  min-height: 50vh !important;
+  width: 400px !important;
+}
+.play {
+  font-size: 3rem !important;
+}
+
+.header-links {
+  margin-top: 20px !important;
+
+  font-size: 1.5rem !important;
 }
 
 .game-board {
@@ -66,8 +72,7 @@ h1 {
 }
 
 .clickable {
-  margin-left: 7px;
-  margin-right: 7px;
+
   text-align: center;
   border-radius: 12px;
   border: none;
@@ -100,7 +105,7 @@ h1 {
 
 .newNum {
   background-color: #2589BD !important;
-  margin-left: 4px;
+  margin-left: 3px;
 }
 
 .bigNum {
@@ -214,6 +219,12 @@ h1 {
 
 .display-none {
   display: none;
+}
+
+.header-links {
+  margin-top: 40px;
+  cursor: pointer;
+  font-size: 3rem;
 }
 
 .header {

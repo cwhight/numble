@@ -26,13 +26,13 @@ export const FirstModal: React.FC<FirstModalProps> = (props: FirstModalProps) =>
     return <div className={className}>
         <div className={"p-3 modal-main-cont d-flex flex-column justify-content-around align-items-center"}>
 
-            <h2>Welcome to Numble</h2>
+            <h2>Welcome to Numble!</h2>
             <p>A daily number puzzle</p>
-            <p>You begin with 2 large numbers, 4 small numbers and one target</p>
+            <p>You begin with 2 large numbers, 4 small numbers and 1 target number</p>
             <p>Perform a series of operations (+, -, x, ÷) between two numbers to get to the total</p>
             <p>Each number can only be used once, once you've performed one operation the total will be available to use in the next operation</p>
             <p>You have 60 seconds to solve the puzzle, try to beat your best time!</p>
-            <p>You can retry the puzzle if you don't succeed but we won't count it towards your scores</p>
+            <p>You can retry the puzzle if you don't succeed but we won't count it towards your scores.</p>
             {buttons}
         </div>
     </div>
