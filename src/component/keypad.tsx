@@ -312,7 +312,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                                 <div className={"d-flex justify-content-end"}>
                                     {newNums}
                                 </div>
-                                <div className={"d-flex justify-content-around"}>
+                                <div className={"d-flex justify-content-between"}>
                                     <Number newNum={false} big={true} isPlaying={isPlaying} onClick={() => handleClick(big1.toString(), 1)} value={big1} used={usedKeys.includes(1)}/>
                                     <Number newNum={false} big={true} isPlaying={isPlaying} onClick={() => handleClick(big2.toString(), 2)} value={big2} used={usedKeys.includes(2)}/>
                                     <Number newNum={false} big={false} isPlaying={isPlaying} onClick={() => handleClick(small1.toString(), 3)} value={small1} used={usedKeys.includes(3)}/>
@@ -324,7 +324,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
                                 <div className={"mb-3 d-flex flex-column justify-content-around"}>
                                     <div className={"d-flex justify-content-between"}>
-                                        <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon icon={faPlus} /></button>
+                                        <button className={"round-clickable"} onClick={() => handleClick("+")}><FontAwesomeIcon icon={faPlus} /></button>
                                         <button className={"round-clickable"} onClick={() => handleClick("-")}><FontAwesomeIcon icon={faMinus} /></button>
                                         <button className={"round-clickable"} onClick={() => handleClick("x")}><FontAwesomeIcon icon={faMultiply} /></button>
                                         <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon icon={faDivide} /></button>
