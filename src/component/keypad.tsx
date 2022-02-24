@@ -8,10 +8,9 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {
     faBackspace,
     faDivide,
-    faEquals,
     faMinus,
     faMultiply,
-    faPlus,
+    faPlus, faQuestion,
     faRefresh,
     faUndo
 } from '@fortawesome/free-solid-svg-icons'
@@ -41,6 +40,7 @@ interface KeyPadProps {
     bigNums: number[]
     smallNums: number[]
     target: number
+    showClock: boolean
 }
 
 
@@ -48,6 +48,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const {bigNums, smallNums, target, userId} = props
 
+    const [showClock, setShowClock] = useState<boolean>(props.showClock)
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
 
     const [numbers, setNewNumbers] = useState<number[]>(JSON.parse(localStorage.getItem("newNumbers")) as number[] || [])
@@ -335,6 +336,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
 
     const play = () => {
+        setShowClock(true)
         if (isPlaying) {
             cacheTimeRemaining(timeRemaining, elapsedTime)
             setHasBeenPaused(true)
@@ -351,7 +353,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             <div>
                 <FinishedModal timeTaken={60 - timeRemaining} score={scores} clear={() => retry()}
                                show={finished.finished} success={finished.success}/>
-                <div className="timer-wrapper mb-3">
+                <div className={`timer-wrapper mb-3 ${!showClock ? "display-none" : ""}`}>
                     <CountdownCircleTimer
                         isPlaying={isPlaying}
                         duration={duration}
@@ -367,7 +369,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             </div>
             <div>
                 <div className={"p-3 text-center my-1 mx-2"}>
-                    <h1 className={"target"}>{isPlaying ? target : "?"}</h1>
+                    <h1 className={"target"}>{isPlaying ? target : <FontAwesomeIcon icon={faQuestion} />}</h1>
                 </div>
             </div>
             <div className="game-board">

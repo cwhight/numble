@@ -5,6 +5,7 @@ import {KeyPad, score} from "../component/keypad";
 import axios from "axios"
 import {v4 as uuidv4} from 'uuid';
 import Header from "../component/header";
+import {FirstModal} from "../component/first_modal";
 
 
 interface HomeProps {
@@ -66,12 +67,13 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
                 smallNums: [],
                 target: null
             },
-            showModal: false
+            showModal: true
         };
     }
 
     componentDidMount() {
         this.fetchNumbers();
+        this.setState({showModal: this.state.scores.gamesPlayed == 0})
     }
 
     // async fetchScores() {
@@ -117,8 +119,8 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
         return (
             <div>
                 <Header onClick={() => this.showModal()} />
-
-                <KeyPad userId={
+                <FirstModal close={()=> this.setState({showModal: false})} show={this.state.showModal} />
+                <KeyPad showClock={!this.state.showModal} userId={
                     this.state.user
                 } bigNums={this.state.numbers.bigNums}
                         smallNums={this.state.numbers.smallNums} target={this.state.numbers.target}/>

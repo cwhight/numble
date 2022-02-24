@@ -9,20 +9,8 @@ interface HeaderProps {
 
 
 const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
-    const [isVisible, setIsVisible] = useState(true);
-    const [currentScrollPos, setCurrentScrollPos] = useState(window.pageYOffset);
 
     const {onClick} = props
-    // // Hide or show the menu.
-    // const handleScroll = () => {
-    //     const newScrollPos = window.pageYOffset;
-    //     const visible = newScrollPos < currentScrollPos || newScrollPos < 350;
-    //
-    //     setIsVisible(visible);
-    //     setCurrentScrollPos(newScrollPos);
-    // };
-    //
-    // window.addEventListener("scroll", handleScroll);
 
     return (
         <div className={`header`}>
