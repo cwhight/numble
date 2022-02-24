@@ -354,7 +354,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     // var modal = finished.finished ? <FinishedModal success={finished.success}/> : null
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
-            <h1 className={"page-title"}>Numble</h1>
             <div>
                 <FinishedModal timeTaken={60 - timeRemaining} score={scores} clear={() => retry()}
                                show={finished.finished} success={finished.success}/>
