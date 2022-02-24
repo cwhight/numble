@@ -1,15 +1,24 @@
 import React, {useEffect, useRef, useState} from "react"
-import {Row} from "react-bootstrap";
 import {Number} from "./number";
-import {Action} from "./action";
 import {Working} from "./working";
 import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
 import {CountdownCircleTimer} from 'react-countdown-circle-timer'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faDivide, faEquals, faMinus, faMultiply, faPlus, faRefresh, faUndo} from '@fortawesome/free-solid-svg-icons'
+import {
+    faBackspace,
+    faDivide,
+    faEquals,
+    faMinus,
+    faMultiply,
+    faPlus,
+    faRefresh,
+    faUndo
+} from '@fortawesome/free-solid-svg-icons'
 import Pause from "./pause";
 import Play from "./plat";
+import Big from "big.js";
+import Header from "./header";
 
 function isNumber(item: any) {
     return !!item.match(/[0-9]+/);
@@ -29,29 +38,28 @@ export interface score {
 
 interface KeyPadProps {
     userId: string
-    saveScores: (success: boolean, timeRemaining: number) => void
     bigNums: number[]
     smallNums: number[]
     target: number
 }
 
+
 export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
-    const {bigNums, smallNums, target, saveScores, userId} = props
-
-    // const data = store().getState()
-    // const [input, setIsInput] = useState("");
+    const {bigNums, smallNums, target, userId} = props
 
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
 
     const [numbers, setNewNumbers] = useState<number[]>(JSON.parse(localStorage.getItem("newNumbers")) as number[] || [])
 
+    const [typedKeys, setTypedKeys] = useState<number[]>([])
     const [usedKeys, setUsedKeys] = useState<number[]>(JSON.parse(localStorage.getItem("usedKeys")) as number[] || [])
 
     const [timeRemaining, setTimeRemaining] = useState<number>(60)
     const [elapsedTime, setElapsedTime] = useState<number>(0)
 
     const [finished, setIsFinished] = useState<finished>({finished: false, success: false})
+    const [hasPlayedToday, setHasPlayedToday] = useState<boolean>(false)
 
     let scores = JSON.parse(localStorage.getItem("scores")) as score
     if (scores == undefined) {
@@ -66,11 +74,11 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     let lastPlayed = localStorage.getItem("lastPlayed")
 
     let today = new Date().setHours(0, 0, 0, 0)
-    console.log(today)
-    console.log(new Date())
-    console.log(localStorage.getItem("lastPlayed"))
-    let gameInProgress = !JSON.parse(localStorage.getItem("finished")) as boolean || false
-    // const target = getRandomArbitrary(101, 999)
+    const lastPlayedInt = parseInt(lastPlayed)
+
+    if (lastPlayedInt >= today && !hasPlayedToday) {
+        setHasPlayedToday(true)
+    }
 
     const big1 = bigNums[0]
     const big2 = bigNums[1]
@@ -123,13 +131,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         localStorage.setItem("usedKeys", JSON.stringify(keys))
     }
 
-    const clear = () => {
+    function clearTotals() {
         setTotals({
             equals: false,
             total: null,
             next: null,
             operation: null,
         })
+    }
+
+    const clear = () => {
+        clearTotals();
 
 
         cacheNewNumbers([])
@@ -140,19 +152,30 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         })
     }
 
-    const saveScore = async (success: boolean, timeRemaining: number): Promise<void> => {
-        const timeTaken = 60 - timeRemaining
-        if (success) {
-            scores.gamesWon += 1
-            scores.averageTime = (scores.averageTime * scores.gamesPlayed + timeTaken) / (scores.gamesPlayed + 1)
-        }
-        if (timeTaken < scores.bestTime || scores.bestTime == undefined) {
-            scores.bestTime = timeTaken
-        }
-        scores.gamesPlayed += 1
+    const retry = () => {
+        clear()
+        setTimeRemaining(60)
+        setElapsedTime(0)
+        cacheTimeRemaining(60, 0)
+    }
 
-        localStorage.setItem("scores", JSON.stringify(scores))
-        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
+    const saveScore = async (success: boolean, timeRemaining: number): Promise<void> => {
+        if(!hasPlayedToday) {
+            const timeTaken = 60 - timeRemaining
+            if (success) {
+                scores.gamesWon += 1
+                scores.averageTime = (scores.averageTime * scores.gamesPlayed + timeTaken) / (scores.gamesWon + 1)
+            }
+            if (timeTaken < scores.bestTime || scores.bestTime == undefined) {
+                scores.bestTime = timeTaken
+            }
+            scores.gamesPlayed += 1
+
+            localStorage.setItem("scores", JSON.stringify(scores))
+            localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
+        }
+
+        setHasPlayedToday(true)
     }
 
     const handleClick = (value: string, key?: number) => {
@@ -180,25 +203,72 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         operation: null
                     }
                 )
+            } else if (totals.total) {
+                setTotals(
+                    {
+                        equals: false,
+                        total: null,
+                        next: null,
+                        operation: null
+                    }
+                )
             }
             return
         }
 
-        if (isNumber(value) && totals.next != null) {
+        if (value == "Undo") {
+            setTypedKeys([])
+            usedKeys.pop()
             usedKeys.pop()
             cacheUsedKeys(usedKeys)
+            numbers.pop()
+            cacheNewNumbers(numbers)
+            clearTotals()
+            return
+        }
+
+        if (isNumber(value)) {
+            if (typedKeys[0] == key) {
+                if (totals.operation) {
+                    return
+                } else {
+                    typedKeys.pop()
+                    setTypedKeys(typedKeys)
+                    setTotals(
+                        {
+                            equals: false,
+                            total: totals.total,
+                            next: null,
+                            operation: totals.operation
+                        }
+                    )
+                }
+                return
+            } else {
+                typedKeys.pop()
+                typedKeys.push(key)
+                setTypedKeys(typedKeys)
+            }
         }
 
         const newTotals = calculate(totals, value)
 
         setTotals(newTotals);
+        if (key != null) {
+            typedKeys.push(key)
+            setTypedKeys(typedKeys)
+        }
+
         if (newTotals.equals) {
             if (newTotals.total == target) {
-
                 gameOver(true)
                 return
             }
 
+            usedKeys.push(typedKeys[0])
+            usedKeys.push(typedKeys[1])
+            setTypedKeys([])
+            cacheUsedKeys(usedKeys)
             numbers.push(newTotals.total)
             cacheNewNumbers(numbers)
             setTotals({
@@ -208,10 +278,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                 operation: null,
             })
         }
-        if (key != null) {
-            usedKeys.push(key)
-            cacheUsedKeys(usedKeys)
-        }
+
     };
 
     const renderTime = ({remainingTime, elapsedTime}: any) => {
@@ -282,7 +349,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <h1 className={"page-title"}>Numble</h1>
             <div>
-                <FinishedModal timeTaken={60 - timeRemaining} score={scores} clear={() => clear()}
+                <FinishedModal timeTaken={60 - timeRemaining} score={scores} clear={() => retry()}
                                show={finished.finished} success={finished.success}/>
                 <div className="timer-wrapper mb-3">
                     <CountdownCircleTimer
@@ -345,15 +412,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon
                             icon={faDivide}/></button>
                     </div>
-                    <div className={"d-flex mt-3 justify-content-around"}>
-                        <button className={"round-clickable w-100"} onClick={() => handleClick("=")}>
-                            <FontAwesomeIcon icon={faEquals}/></button>
-                    </div>
+
                 </div>
             </div>
             <div className={"game-board d-flex justify-content-between"}>
-                    <button className={"round-clickable"} onClick={() => handleClick("<-")}><FontAwesomeIcon
+                <div>
+
+                    <button className={"round-clickable"} onClick={() => handleClick("Undo")}><FontAwesomeIcon
                         icon={faUndo}/></button>
+                    <button className={"round-clickable"} onClick={() => handleClick("<-")}><FontAwesomeIcon
+                        icon={faBackspace}/></button>
+                </div>
                     <button className={"round-clickable"} onClick={() => handleClick("AC")}><FontAwesomeIcon
                         icon={faRefresh}/></button>
             </div>

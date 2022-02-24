@@ -24,12 +24,16 @@ export default function calculate(obj: any, buttonName: any) {
     }
 
     if (isNumber(buttonName)) {
-        if (buttonName === '0' && obj.next === '0') {
-            return {};
-        }
         // If there is an operation, update next
         if (obj.operation) {
-            return { ...obj, next: buttonName };
+            // return { ...obj, next: buttonName };
+            console.log("helllllooooooo")
+            return {
+                equals: true,
+                total: operate(obj.total, buttonName, obj.operation),
+                next: null,
+                operation: null,
+            };
         }
 
         return {
@@ -41,12 +45,7 @@ export default function calculate(obj: any, buttonName: any) {
 
     if (buttonName === '=') {
         if (obj.next && obj.operation) {
-            return {
-                equals: true,
-                total: operate(obj.total, obj.next, obj.operation),
-                next: null,
-                operation: null,
-            };
+
         }
         // '=' with no operation, nothing to do
         return { ...obj };
