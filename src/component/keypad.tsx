@@ -279,10 +279,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     // var modal = finished.finished ? <FinishedModal success={finished.success}/> : null
     const form =
-        <div className={"game-wrapper d-flex flex-column justify-content-around"}>
-            <div className={"justify-content-center align-items-center"}>
-                <h1 className={"page-title"}>Numble</h1>
-            </div>
+        <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
+            <h1 className={"page-title"}>Numble</h1>
             <div>
                 <FinishedModal timeTaken={60 - timeRemaining} score={scores} clear={() => clear()}
                                show={finished.finished} success={finished.success}/>
@@ -293,7 +291,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         colors={['#004777', '#F7B801', '#A30000', '#A30000']}
                         colorsTime={[45, 30, 10, 0]}
                         onComplete={(time: number) => timeUp()}
-                        size={100}
                     >
                         {renderTime}
                     </CountdownCircleTimer>
@@ -301,59 +298,64 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
                 {isPlaying ? <Pause onPlayerClick={() => play()}/> : <Play onPlayerClick={() => play()}/>}
             </div>
-            <div className="p-3 d-flex flex-column justify-content-around">
+            <div>
                 <div className={"p-3 text-center my-1 mx-2"}>
                     <h1 className={"target"}>{isPlaying ? target : "?"}</h1>
                 </div>
+            </div>
+            <div className="game-board">
                 <Working totals={totals}/>
-                <div className={"w-100 keypad d-flex flex-column justify-content-around"}>
-                        <div className={"d-flex justify-content-end"}>
-                            {newNums}
-                        </div>
-                        <div className={"d-flex justify-content-between"}>
-                            <Number newNum={false} big={true} isPlaying={isPlaying}
-                                    onClick={() => handleClick(big1.toString(), 1)} value={big1}
-                                    used={usedKeys.includes(1)}/>
-                            <Number newNum={false} big={true} isPlaying={isPlaying}
-                                    onClick={() => handleClick(big2.toString(), 2)} value={big2}
-                                    used={usedKeys.includes(2)}/>
-                            <Number newNum={false} big={false} isPlaying={isPlaying}
-                                    onClick={() => handleClick(small1.toString(), 3)} value={small1}
-                                    used={usedKeys.includes(3)}/>
-                            <Number newNum={false} big={false} isPlaying={isPlaying}
-                                    onClick={() => handleClick(small2.toString(), 4)} value={small2}
-                                    used={usedKeys.includes(4)}/>
-                            <Number newNum={false} big={false} isPlaying={isPlaying}
-                                    onClick={() => handleClick(small3.toString(), 5)} value={small3}
-                                    used={usedKeys.includes(5)}/>
-                            <Number newNum={false} big={false} isPlaying={isPlaying}
-                                    onClick={() => handleClick(small4.toString(), 6)} value={small4}
-                                    used={usedKeys.includes(6)}/>
-                        </div>
-
-                    <div className={"mb-3 d-flex flex-column justify-content-around"}>
-                        <div className={"d-flex justify-content-between"}>
-                            <button className={"round-clickable"} onClick={() => handleClick("+")}><FontAwesomeIcon
-                                icon={faPlus}/></button>
-                            <button className={"round-clickable"} onClick={() => handleClick("-")}><FontAwesomeIcon
-                                icon={faMinus}/></button>
-                            <button className={"round-clickable"} onClick={() => handleClick("x")}><FontAwesomeIcon
-                                icon={faMultiply}/></button>
-                            <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon
-                                icon={faDivide}/></button>
-                        </div>
-                        <div className={"d-flex mt-3 justify-content-around"}>
-                            <button className={"round-clickable w-100"} onClick={() => handleClick("=")}>
-                                <FontAwesomeIcon icon={faEquals}/></button>
-                        </div>
+            </div>
+            <div className="game-board d-flex flex-column justify-content-around">
+                <div className={"d-flex flex-column justify-content-around"}>
+                    <div className={"d-flex justify-content-end"}>
+                        {newNums}
                     </div>
-                    <div className={"d-flex justify-content-stretch align-items-stretch"}>
-                        <button className={"round-clickable"} onClick={() => handleClick("<-")}><FontAwesomeIcon
-                            icon={faUndo}/></button>
-                        <button className={"round-clickable mx-3"} onClick={() => handleClick("AC")}><FontAwesomeIcon
-                            icon={faRefresh}/></button>
+                    <div className={"d-flex justify-content-between"}>
+                        <Number newNum={false} big={true} isPlaying={isPlaying}
+                                onClick={() => handleClick(big1.toString(), 1)} value={big1}
+                                used={usedKeys.includes(1)}/>
+                        <Number newNum={false} big={true} isPlaying={isPlaying}
+                                onClick={() => handleClick(big2.toString(), 2)} value={big2}
+                                used={usedKeys.includes(2)}/>
+                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                                onClick={() => handleClick(small1.toString(), 3)} value={small1}
+                                used={usedKeys.includes(3)}/>
+                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                                onClick={() => handleClick(small2.toString(), 4)} value={small2}
+                                used={usedKeys.includes(4)}/>
+                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                                onClick={() => handleClick(small3.toString(), 5)} value={small3}
+                                used={usedKeys.includes(5)}/>
+                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                                onClick={() => handleClick(small4.toString(), 6)} value={small4}
+                                used={usedKeys.includes(6)}/>
                     </div>
                 </div>
+            </div>
+            <div className="game-board d-flex flex-column justify-content-around">
+                <div className={"mb-3 d-flex flex-column justify-content-around"}>
+                    <div className={"d-flex justify-content-between"}>
+                        <button className={"round-clickable"} onClick={() => handleClick("+")}><FontAwesomeIcon
+                            icon={faPlus}/></button>
+                        <button className={"round-clickable"} onClick={() => handleClick("-")}><FontAwesomeIcon
+                            icon={faMinus}/></button>
+                        <button className={"round-clickable"} onClick={() => handleClick("x")}><FontAwesomeIcon
+                            icon={faMultiply}/></button>
+                        <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon
+                            icon={faDivide}/></button>
+                    </div>
+                    <div className={"d-flex mt-3 justify-content-around"}>
+                        <button className={"round-clickable w-100"} onClick={() => handleClick("=")}>
+                            <FontAwesomeIcon icon={faEquals}/></button>
+                    </div>
+                </div>
+            </div>
+            <div className={"game-board d-flex justify-content-between"}>
+                    <button className={"round-clickable"} onClick={() => handleClick("<-")}><FontAwesomeIcon
+                        icon={faUndo}/></button>
+                    <button className={"round-clickable"} onClick={() => handleClick("AC")}><FontAwesomeIcon
+                        icon={faRefresh}/></button>
             </div>
 
         </div>
