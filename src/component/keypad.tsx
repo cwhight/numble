@@ -271,7 +271,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     // var modal = finished.finished ? <FinishedModal success={finished.success}/> : null
     const form =
-        <div className={"full-height d-flex flex-column justify-content-around"}>
+        <div className={"d-flex flex-column justify-content-around"}>
             <Row className={"justify-content-center align-items-center"}>
                 <h1 className={"page-title"}>Numble</h1>
             </Row>
