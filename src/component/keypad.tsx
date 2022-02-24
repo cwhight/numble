@@ -162,8 +162,12 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         if(!hasPlayedToday) {
             const timeTaken = 60 - timeRemaining
             if (success) {
+                if (scores.gamesWon == 0 || scores.gamesWon == null) {
+                    scores.averageTime = timeTaken
+                } else {
+                    scores.averageTime = (scores.averageTime * scores.gamesWon + timeTaken) / (scores.gamesWon + 1)
+                }
                 scores.gamesWon += 1
-                scores.averageTime = (scores.averageTime * scores.gamesPlayed + timeTaken) / (scores.gamesWon + 1)
             }
             if (timeTaken < scores.bestTime || scores.bestTime == undefined) {
                 scores.bestTime = timeTaken
