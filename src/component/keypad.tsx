@@ -155,6 +155,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         clear()
         setTimeRemaining(60)
         setElapsedTime(0)
+        setHasBeenPaused(false)
         cacheTimeRemaining(60, 0)
     }
 
