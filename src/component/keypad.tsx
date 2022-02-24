@@ -143,8 +143,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const clear = () => {
         clearTotals();
-
-
         cacheNewNumbers([])
         cacheUsedKeys([])
         setIsFinished({
@@ -180,6 +178,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
     const handleClick = (value: string, key?: number) => {
+        if (!isPlaying) {
+            return
+        }
+
         if (value == "AC") {
             clear()
         }
@@ -334,13 +336,12 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     let parsedElapsedTime = JSON.parse(localStorage.getItem("elapsedTime")) as number;
     let duration = hasBeenPaused ? parsedStorageTime + parsedElapsedTime : parsedStorageTime || 60
 
-
     const play = () => {
         setShowClock(true)
         if (isPlaying) {
             cacheTimeRemaining(timeRemaining, elapsedTime)
+            setShowClock(false)
             setHasBeenPaused(true)
-        } else {
         }
 
         setIsPlaying(!isPlaying)

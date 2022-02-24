@@ -79,19 +79,6 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
         this.setState({showModal: this.state.scores.gamesPlayed == 0})
     }
 
-    // async fetchScores() {
-    //     try {
-    //         this.setState({...this.state, isFetching: true});
-    //         const response = await axios.get("https://numble-game.herokuapp.com/scores?user_id=" + this.state.user);
-    //
-    //
-    //         this.setState({scores: setScores(response.data.scores), hasUpToDateScores: true});
-    //     } catch (e) {
-    //         console.log(e);
-    //         this.setState({...this.state, isFetching: false});
-    //     }
-    // };
-
     async fetchNumbers() {
         try {
             this.setState({...this.state, isFetching: true});
@@ -103,17 +90,6 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
         }
     };
 
-    // async saveScores(success: boolean, timeRemaining: number) {
-    //     try {
-    //         const timeTaken = success ? 60 - timeRemaining : 61
-    //         const body = {user_id: this.state.user, time_taken: timeTaken}
-    //         const response = await axios.post("https://numble-game.herokuapp.com/scores", body)
-    //         this.setState({scores: setScores(response.data.scores), hasUpToDateScores: true});
-    //     } catch (e) {
-    //         console.log(e)
-    //         this.setState({...this.state, isFetching: false});
-    //     }
-    // }
     showModal() {
         this.setState({showModal: !this.state.showModal})
     }
@@ -128,10 +104,13 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
                 <Header showScores={() => this.showScoresModal()}showRules={() => this.showModal()}/>
                 <FirstModal close={()=> this.setState({showModal: false})} show={this.state.showModal} />
                 <ScoresModal scores={this.state.scores} close={()=> this.setState({showScoresModal: false})} show={this.state.showScoresModal} />
-                <KeyPad showClock={!this.state.showModal} userId={
-                    this.state.user
-                } bigNums={this.state.numbers.bigNums}
-                        smallNums={this.state.numbers.smallNums} target={this.state.numbers.target}/>
+                <KeyPad
+                    showClock={!this.state.showModal}
+                    userId={this.state.user}
+                    bigNums={this.state.numbers.bigNums}
+                    smallNums={this.state.numbers.smallNums}
+                    target={this.state.numbers.target}
+                />
             </div>
         );
     }
