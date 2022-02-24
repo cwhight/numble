@@ -15,7 +15,7 @@ export const Working: React.FC<WorkingProps> = (props: WorkingProps) => {
 
 
     return         <div className="display" id="display">
-          <span className="total">
+          <span className="mb-3 total">
             {totals.total}
               {totals.operation}
               {totals.next}

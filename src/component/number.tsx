@@ -19,5 +19,5 @@ export const Number: React.FC<NumberProps> = (props: NumberProps) => {
         }
     }
 
-    return <button onClick={click} className={`btn clickable p-3 m-1 ${used ? "used" : ""} ${big ? "bigNum" : newNum ? "newNum" : "smallNum"}`}>{ isPlaying ? value : ""}</button>
+    return <button onClick={click} className={`btn clickable p-2 mb-2 ${used ? "used" : ""} ${big ? "bigNum" : newNum ? "newNum" : "smallNum"}`}>{ isPlaying ? value : ""}</button>
 }

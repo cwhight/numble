@@ -4,9 +4,9 @@ import {faPlay} from '@fortawesome/free-solid-svg-icons'
 
 const Play = ({onPlayerClick} :any ) => {
     return (
-        <svg className=" d-flex justify-content-around  align-items-center button" viewBox="0 0 60 60" onClick={onPlayerClick}>
+        <div className="d-flex justify-content-around play" onClick={onPlayerClick}>
             <FontAwesomeIcon icon={faPlay} />
-        </svg>
+        </div>
     )
 }
 
