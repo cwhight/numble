@@ -5,7 +5,10 @@ import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
 import {CountdownCircleTimer} from 'react-countdown-circle-timer'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import ReactGA from 'react-ga';
+const TRACKING_ID = "UA-221463714-1"; // YOUR_OWN_TRACKING_ID
 
+ReactGA.initialize(TRACKING_ID);
 import {
     faBackspace,
     faDivide,
@@ -115,6 +118,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
 
     const gameOver = (success: boolean) => {
+        ReactGA.event({
+            category: 'Game',
+            action: 'Won'
+        })
         if (attempts == 0) {
             localStorage.setItem("todaysTime", (60 - timeRemaining).toString())
         }
@@ -132,6 +139,11 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
     const timeUp = () => {
+        ReactGA.event({
+            category: 'Game',
+            action: 'Lost'
+        })
+
         localStorage.setItem("finished", "true")
         setAttempts(attempts + 1)
         localStorage.setItem("attempts", attempts.toString())
