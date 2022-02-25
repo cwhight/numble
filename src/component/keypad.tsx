@@ -63,15 +63,16 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const [hasPlayedToday, setHasPlayedToday] = useState<boolean>(false)
 
     let scores = JSON.parse(localStorage.getItem("scores")) as score
-    if (scores == undefined) {
-        localStorage.setItem("scores", JSON.stringify({
+    if (scores == undefined || scores == null) {
+        let scoresSet = {
             averageTime: 0,
             gamesPlayed: 0,
             gamesWon: 0,
-            bestTime: undefined
-        }))
+            bestTime: 0
+        };
+        localStorage.setItem("scores", JSON.stringify(scoresSet))
+        scores = scoresSet
     }
-
     let lastPlayed = localStorage.getItem("lastPlayed")
 
     let today = new Date().setHours(0, 0, 0, 0)
