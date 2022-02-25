@@ -115,6 +115,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         setIsPlaying(false)
         setIsFinished({finished: true, success: false})
         saveScore(false, 0)
+        setTimeRemaining(60)
+        setElapsedTime(0)
+        setHasBeenPaused(false)
+        cacheTimeRemaining(60, 0)
     }
 
     const cacheTimeRemaining = (time: number, elapsed: number) => {
@@ -151,12 +155,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         })
     }
 
+    const [hasRetried, setHasRetried] = useState<boolean>(false)
+
     const retry = () => {
         clear()
-        setTimeRemaining(60)
-        setElapsedTime(0)
-        setHasBeenPaused(false)
-        cacheTimeRemaining(60, 0)
+        setKey(key + 1)
+        // setTimeRemaining(60)
+        // setElapsedTime(0)
+        // setHasBeenPaused(false)
+        // cacheTimeRemaining(60, 0)
+        setDuration(60)
+        setHasRetried(true)
     }
 
     const saveScore = async (success: boolean, timeRemaining: number): Promise<void> => {
@@ -201,7 +210,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         operation: totals.operation
                     }
                 )
-                usedKeys.pop()
+                typedKeys.pop()
             } else if (totals.operation) {
                 setTotals(
                     {
@@ -220,6 +229,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         operation: null
                     }
                 )
+                typedKeys.pop()
             }
             return
         }
@@ -290,6 +300,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     };
 
     const renderTime = ({remainingTime, elapsedTime}: any) => {
+        // if (hasRetried) {
+        //     remainingTime = timeRemaining
+        // }
+
         setElapsedTime(elapsedTime)
         setTimeRemaining(remainingTime)
         const currentTime = useRef(remainingTime);
@@ -314,19 +328,15 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
         const isTimeUp = isNewTimeFirstTick.current;
 
+        if (isTimeUp) {
+            setElapsedTime(0)
+            setTimeRemaining(60)
+        }
         return (
             <div className="time-wrapper">
                 <div key={remainingTime} className={`time ${isTimeUp ? "up" : ""}`}>
                     {remainingTime}
                 </div>
-                {prevTime.current !== null && (
-                    <div
-                        key={prevTime.current}
-                        className={`time ${!isTimeUp ? "down" : ""}`}
-                    >
-                        {prevTime.current}
-                    </div>
-                )}
             </div>
         );
     };
@@ -339,7 +349,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const [hasBeenPaused, setHasBeenPaused] = useState<boolean>(false)
     let parsedStorageTime = JSON.parse(localStorage.getItem("timeRemaining")) as number;
     let parsedElapsedTime = JSON.parse(localStorage.getItem("elapsedTime")) as number;
-    let duration = hasBeenPaused ? parsedStorageTime + parsedElapsedTime : parsedStorageTime || 60
+    let durationCalc = hasBeenPaused ? parsedStorageTime + parsedElapsedTime : hasRetried ? 60 : parsedStorageTime || 60
+    const [duration, setDuration] = useState<number>(durationCalc)
+
+    const [key, setKey] = useState(0)
 
     const play = () => {
         setShowClock(true)
@@ -347,6 +360,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             cacheTimeRemaining(timeRemaining, elapsedTime)
             setShowClock(false)
             setHasBeenPaused(true)
+        } else {
+            setDuration(durationCalc)
+            setHasRetried(false)
         }
 
         setIsPlaying(!isPlaying)
@@ -360,6 +376,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                                show={finished.finished} success={finished.success}/>
                 <div className={`timer-wrapper mb-3 ${!showClock ? "display-none" : ""}`}>
                     <CountdownCircleTimer
+                        key={key}
                         isPlaying={isPlaying}
                         duration={duration}
                         colors={['#004777', '#F7B801', '#A30000', '#A30000']}
@@ -370,9 +387,11 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     </CountdownCircleTimer>
                 </div>
 
-                {isPlaying ? <Pause onPlayerClick={() => play()}/> : <Play onPlayerClick={() => play()}/>}
             </div>
             <div>
+                <div className={"mb-3"}>
+                    {isPlaying ? <Pause onPlayerClick={() => play()}/> : <Play onPlayerClick={() => play()}/>}
+                </div>
                 <div className={"p-3 text-center my-1 mx-2"}>
                     <h1 className={"target"}>{isPlaying ? target : <FontAwesomeIcon icon={faQuestion} />}</h1>
                 </div>
