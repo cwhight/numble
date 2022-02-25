@@ -240,6 +240,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     }
                 )
                 typedKeys.pop()
+                setTypedKeys(typedKeys)
             } else if (totals.operation) {
                 setTotals(
                     {
@@ -259,6 +260,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     }
                 )
                 typedKeys.pop()
+                setTypedKeys(typedKeys)
             }
             return
         }
@@ -292,7 +294,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                 }
                 return
             } else {
-                typedKeys.pop()
+                // typedKeys.pop()
                 typedKeys.push(key)
                 setTypedKeys(typedKeys)
             }
@@ -301,10 +303,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         const newTotals = calculate(totals, value)
 
         setTotals(newTotals);
-        if (key != null) {
-            typedKeys.push(key)
-            setTypedKeys(typedKeys)
-        }
+        // if (key != null) {
+        //     typedKeys.push(key)
+        //     setTypedKeys(typedKeys)
+        // }
 
         if (newTotals.equals) {
             if (newTotals.total == target) {
@@ -325,7 +327,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                 operation: null,
             })
         }
-
     };
 
     const renderTime = ({remainingTime, elapsedTime}: any) => {
