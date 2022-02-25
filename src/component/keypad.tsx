@@ -5,6 +5,8 @@ import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
 import {CountdownCircleTimer} from 'react-countdown-circle-timer'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import { exportComponentAsJPEG, exportComponentAsPDF, exportComponentAsPNG } from 'react-component-export-image';
+
 import {
     faBackspace,
     faDivide,
@@ -50,7 +52,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const [showClock, setShowClock] = useState<boolean>(props.showClock)
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
-
+    const [attempts, setAttempts] = useState<number>(JSON.parse(localStorage.getItem("attempts")) as number || 0)
     const [numbers, setNewNumbers] = useState<number[]>(JSON.parse(localStorage.getItem("newNumbers")) as number[] || [])
 
     const [typedKeys, setTypedKeys] = useState<number[]>([])
@@ -81,6 +83,11 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         setHasPlayedToday(true)
     }
 
+    if (!hasPlayedToday && attempts != 0) {
+        setAttempts(0)
+        localStorage.setItem("attempts", "0")
+    }
+
     const big1 = bigNums[0]
     const big2 = bigNums[1]
 
@@ -101,6 +108,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
 
     const gameOver = (success: boolean) => {
+        setAttempts(attempts + 1)
+        localStorage.setItem("attempts", attempts.toString())
         localStorage.setItem("finished", "true")
         setIsFinished({
             finished: true,
@@ -112,6 +121,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const timeUp = () => {
         localStorage.setItem("finished", "true")
+        setAttempts(attempts + 1)
+        localStorage.setItem("attempts", attempts.toString())
+
         setIsPlaying(false)
         setIsFinished({finished: true, success: false})
         saveScore(false, 0)
@@ -147,6 +159,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const clear = () => {
         clearTotals();
+        setTypedKeys([])
         cacheNewNumbers([])
         cacheUsedKeys([])
         setIsFinished({
@@ -179,7 +192,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                 }
                 scores.gamesWon += 1
             }
-            if (timeTaken < scores.bestTime || scores.bestTime == undefined) {
+            if ((timeTaken < scores.bestTime || scores.bestTime == undefined) && success) {
                 scores.bestTime = timeTaken
             }
             scores.gamesPlayed += 1
@@ -368,13 +381,15 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         setIsPlaying(!isPlaying)
     }
 
-    // var modal = finished.finished ? <FinishedModal success={finished.success}/> : null
+
+    let timerRef = React.createRef<HTMLDivElement>()
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <div>
-                <FinishedModal timeTaken={60 - timeRemaining} score={scores} clear={() => retry()}
+                <FinishedModal attempts={attempts} timerRef={timerRef} timeTaken={60 - timeRemaining} score={scores} clear={() => retry()}
                                show={finished.finished} success={finished.success}/>
-                <div className={`timer-wrapper mb-3 ${!showClock ? "display-none" : ""}`}>
+
+                <div ref={timerRef} className={`timer-wrapper mb-3 ${!showClock ? "display-none" : ""}`}>
                     <CountdownCircleTimer
                         key={key}
                         isPlaying={isPlaying}
@@ -386,7 +401,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         {renderTime}
                     </CountdownCircleTimer>
                 </div>
-
             </div>
             <div>
                 <div className={"mb-3"}>
@@ -452,9 +466,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     <button className={"round-clickable"} onClick={() => handleClick("AC")}><FontAwesomeIcon
                         icon={faRefresh}/></button>
             </div>
-
         </div>
 
     return form
 }
+
 
