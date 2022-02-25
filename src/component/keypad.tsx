@@ -59,7 +59,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const [typedKeys, setTypedKeys] = useState<number[]>([])
     const [usedKeys, setUsedKeys] = useState<number[]>(JSON.parse(localStorage.getItem("usedKeys")) as number[] || [])
 
-    const [timeRemaining, setTimeRemaining] = useState<number>(60)
+    const [timeRemaining, setTimeRemaining] = useState<number>(120)
     const [elapsedTime, setElapsedTime] = useState<number>(0)
 
     const [finished, setIsFinished] = useState<finished>({finished: false, success: false})
@@ -71,7 +71,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             averageTime: 0,
             gamesPlayed: 0,
             gamesWon: 0,
-            bestTime: 60
+            bestTime: 120
         };
         localStorage.setItem("scores", JSON.stringify(scoresSet))
         scores = scoresSet
@@ -123,10 +123,12 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             action: 'Won'
         })
         if (attempts == 0) {
-            localStorage.setItem("todaysTime", (60 - timeRemaining).toString())
+            localStorage.setItem("todaysTime", (120 - timeRemaining).toString())
         }
-        setAttempts(attempts + 1)
-        localStorage.setItem("attempts", (attempts + 1).toString())
+
+        const newAttempts = attempts + 1
+        setAttempts(newAttempts)
+        localStorage.setItem("attempts", (newAttempts).toString())
         localStorage.setItem("finished", "true")
         setIsFinished({
             finished: true,
@@ -145,16 +147,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         })
 
         localStorage.setItem("finished", "true")
-        setAttempts(attempts + 1)
-        localStorage.setItem("attempts", attempts.toString())
+        const newAttempts = attempts + 1
+        setAttempts(newAttempts)
+        localStorage.setItem("attempts", (newAttempts).toString())
 
         setIsPlaying(false)
         setIsFinished({finished: true, success: false})
         saveScore(false, 0)
-        setTimeRemaining(60)
+        setTimeRemaining(120)
         setElapsedTime(0)
         setHasBeenPaused(false)
-        cacheTimeRemaining(60, 0)
+        cacheTimeRemaining(120, 0)
     }
 
     const cacheTimeRemaining = (time: number, elapsed: number) => {
@@ -197,17 +200,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const retry = () => {
         clear()
         setKey(key + 1)
-        // setTimeRemaining(60)
+        // setTimeRemaining(120)
         // setElapsedTime(0)
         // setHasBeenPaused(false)
-        // cacheTimeRemaining(60, 0)
-        setDuration(60)
+        // cacheTimeRemaining(120, 0)
+        setDuration(120)
         setHasRetried(true)
     }
 
     const saveScore = async (success: boolean, timeRemaining: number): Promise<void> => {
         if (!hasPlayedToday) {
-            const timeTaken = 60 - timeRemaining
+            const timeTaken = 120 - timeRemaining
             if (success) {
                 if (scores.gamesWon == 0 || scores.gamesWon == null) {
                     scores.averageTime = timeTaken
@@ -370,7 +373,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
         if (isTimeUp) {
             setElapsedTime(0)
-            setTimeRemaining(60)
+            setTimeRemaining(120)
         }
         return (
             <div className="time-wrapper">
@@ -390,7 +393,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const [hasBeenPaused, setHasBeenPaused] = useState<boolean>(false)
     let parsedStorageTime = JSON.parse(localStorage.getItem("timeRemaining")) as number;
     let parsedElapsedTime = JSON.parse(localStorage.getItem("elapsedTime")) as number;
-    let durationCalc = hasBeenPaused ? parsedStorageTime + parsedElapsedTime : hasRetried ? 60 : parsedStorageTime || 60
+    let durationCalc = hasBeenPaused ? parsedStorageTime + parsedElapsedTime : hasRetried ? 120 : parsedStorageTime || 120
     const [duration, setDuration] = useState<number>(durationCalc)
 
     const [key, setKey] = useState(0)
@@ -418,7 +421,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <div>
-                <FinishedModal attempts={attempts} timerRef={timerRef} timeTaken={60 - timeRemaining} score={scores}
+                <FinishedModal attempts={attempts} timerRef={timerRef} timeTaken={120 - timeRemaining} score={scores}
                                clear={() => retry()}
                                show={finished.finished} success={finished.success}/>
 
