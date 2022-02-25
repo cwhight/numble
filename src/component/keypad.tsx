@@ -409,6 +409,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
                 <div ref={timerRef} className={`timer-wrapper mb-3 ${!showClock ? "display-none" : ""}`}>
                     <CountdownCircleTimer
+                        size={120}
                         key={key}
                         isPlaying={isPlaying && !solved}
                         duration={duration}
