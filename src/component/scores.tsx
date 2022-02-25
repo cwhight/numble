@@ -30,7 +30,7 @@ Today's Time: ${
         }
 Average Time: ${scores.gamesWon > 0 ? scores.averageTime + " Seconds" : "N/A"}
 Best Time: ${scores.gamesWon > 0 ? scores.bestTime + " Seconds" : "N/A"}
-http://www.numble-game.co.uk`;
+https://www.numble-game.co.uk`;
 
         setMsg("Copied to clipboard!");
         setShowCopyMsg(true);
