@@ -294,7 +294,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                 }
                 return
             } else {
-                // typedKeys.pop()
+                if (!totals.operation) {
+                    typedKeys.pop()
+                }
                 typedKeys.push(key)
                 setTypedKeys(typedKeys)
             }
