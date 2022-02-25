@@ -120,7 +120,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const gameOver = (success: boolean) => {
         ReactGA.event({
             category: 'Game',
-            action: 'Won'
+            action: 'Won',
+            value: 120 - timeRemaining
         })
         if (attempts == 0) {
             localStorage.setItem("todaysTime", (120 - timeRemaining).toString())
