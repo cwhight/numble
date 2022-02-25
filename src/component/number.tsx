@@ -8,10 +8,11 @@ export interface NumberProps extends ButtonProps {
     used: boolean
     big: boolean
     newNum: boolean
+    solved: boolean
 }
 
 export const Number: React.FC<NumberProps> = (props: NumberProps) => {
-    var {value, used, onClick, isPlaying, big, newNum} = props
+    var {value, used, onClick, isPlaying, big, newNum, solved} = props
 
     const click = () => {
         if (!used) {
@@ -19,5 +20,5 @@ export const Number: React.FC<NumberProps> = (props: NumberProps) => {
         }
     }
 
-    return <button onClick={click} className={`btn clickable p-2 mb-2 ${used ? "used" : ""} ${big ? "bigNum" : newNum ? "newNum" : "smallNum"}`}>{ isPlaying ? value : ""}</button>
+    return <button onClick={click} className={`btn clickable p-2 mb-2 ${used ? "used" : ""} ${big ? "bigNum" : newNum ? "newNum" : "smallNum"}`}>{ isPlaying || solved ? value : ""}</button>
 }

@@ -5,21 +5,19 @@ import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
 import {CountdownCircleTimer} from 'react-countdown-circle-timer'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import { exportComponentAsJPEG, exportComponentAsPDF, exportComponentAsPNG } from 'react-component-export-image';
 
 import {
     faBackspace,
     faDivide,
     faMinus,
     faMultiply,
-    faPlus, faQuestion,
+    faPlus,
+    faQuestion,
     faRefresh,
     faUndo
 } from '@fortawesome/free-solid-svg-icons'
 import Pause from "./pause";
 import Play from "./plat";
-import Big from "big.js";
-import Header from "./header";
 
 function isNumber(item: any) {
     return !!item.match(/[0-9]+/);
@@ -78,12 +76,20 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     let today = new Date().setHours(0, 0, 0, 0)
     const lastPlayedInt = parseInt(lastPlayed)
+    const [solved, setSolved] = useState(JSON.parse(localStorage.getItem("solved")) as boolean || false)
 
+    let played: boolean
     if (lastPlayedInt >= today && !hasPlayedToday) {
         setHasPlayedToday(true)
+        played = true
     }
 
-    if (!hasPlayedToday && attempts != 0) {
+    if (!hasPlayedToday && !played && attempts != 0) {
+        if (solved) {
+            setSolved(false)
+            localStorage.setItem("solved", "false")
+            localStorage.setItem("todaysTime", "0")
+        }
         setAttempts(0)
         localStorage.setItem("attempts", "0")
     }
@@ -108,13 +114,18 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
 
     const gameOver = (success: boolean) => {
+        if (attempts == 0) {
+            localStorage.setItem("todaysTime", (60 - timeRemaining).toString())
+        }
         setAttempts(attempts + 1)
-        localStorage.setItem("attempts", attempts.toString())
+        localStorage.setItem("attempts", (attempts + 1).toString())
         localStorage.setItem("finished", "true")
         setIsFinished({
             finished: true,
             success: true
         })
+        setSolved(true)
+        localStorage.setItem("solved", "true")
         setIsPlaying(false)
         saveScore(success, timeRemaining)
     }
@@ -182,7 +193,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
     const saveScore = async (success: boolean, timeRemaining: number): Promise<void> => {
-        if(!hasPlayedToday) {
+        if (!hasPlayedToday) {
             const timeTaken = 60 - timeRemaining
             if (success) {
                 if (scores.gamesWon == 0 || scores.gamesWon == null) {
@@ -205,6 +216,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
     const handleClick = (value: string, key?: number) => {
+        if (solved) {
+            return
+        }
+
         if (!isPlaying) {
             return
         }
@@ -313,10 +328,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     };
 
     const renderTime = ({remainingTime, elapsedTime}: any) => {
-        // if (hasRetried) {
-        //     remainingTime = timeRemaining
-        // }
-
         setElapsedTime(elapsedTime)
         setTimeRemaining(remainingTime)
         const currentTime = useRef(remainingTime);
@@ -355,8 +366,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     };
 
     let newNums = numbers.map((num, i) => {
-        return <Number newNum={true} big={false} isPlaying={isPlaying}
-                       onClick={() => handleClick(num.toString(), 7 + i)} value={num} used={usedKeys.includes(7 + i)}/>
+        return <Number solved={solved} newNum={true} big={false} isPlaying={isPlaying}
+                       onClick={() => handleClick(num.toString(), 7 + i)} value={num}
+                       used={usedKeys.includes(7 + i)}/>
     })
 
     const [hasBeenPaused, setHasBeenPaused] = useState<boolean>(false)
@@ -368,6 +380,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const [key, setKey] = useState(0)
 
     const play = () => {
+        if (solved) {
+            return
+        }
+
         setShowClock(true)
         if (isPlaying) {
             cacheTimeRemaining(timeRemaining, elapsedTime)
@@ -386,13 +402,14 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <div>
-                <FinishedModal attempts={attempts} timerRef={timerRef} timeTaken={60 - timeRemaining} score={scores} clear={() => retry()}
+                <FinishedModal attempts={attempts} timerRef={timerRef} timeTaken={60 - timeRemaining} score={scores}
+                               clear={() => retry()}
                                show={finished.finished} success={finished.success}/>
 
                 <div ref={timerRef} className={`timer-wrapper mb-3 ${!showClock ? "display-none" : ""}`}>
                     <CountdownCircleTimer
                         key={key}
-                        isPlaying={isPlaying}
+                        isPlaying={isPlaying && !solved}
                         duration={duration}
                         colors={['#004777', '#F7B801', '#A30000', '#A30000']}
                         colorsTime={[45, 30, 10, 0]}
@@ -407,7 +424,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     {isPlaying ? <Pause onPlayerClick={() => play()}/> : <Play onPlayerClick={() => play()}/>}
                 </div>
                 <div className={"p-3 text-center my-1 mx-2"}>
-                    <h1 className={"target"}>{isPlaying ? target : <FontAwesomeIcon icon={faQuestion} />}</h1>
+                    <h1 className={"target"}>{isPlaying || solved ? target :
+                        <FontAwesomeIcon icon={faQuestion}/>}</h1>
                 </div>
             </div>
             <div className="game-board">
@@ -419,22 +437,22 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         {newNums}
                     </div>
                     <div className={"d-flex justify-content-between"}>
-                        <Number newNum={false} big={true} isPlaying={isPlaying}
+                        <Number solved={solved} newNum={false} big={true} isPlaying={isPlaying}
                                 onClick={() => handleClick(big1.toString(), 1)} value={big1}
                                 used={usedKeys.includes(1)}/>
-                        <Number newNum={false} big={true} isPlaying={isPlaying}
+                        <Number solved={solved} newNum={false} big={true} isPlaying={isPlaying}
                                 onClick={() => handleClick(big2.toString(), 2)} value={big2}
                                 used={usedKeys.includes(2)}/>
-                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
                                 onClick={() => handleClick(small1.toString(), 3)} value={small1}
                                 used={usedKeys.includes(3)}/>
-                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
                                 onClick={() => handleClick(small2.toString(), 4)} value={small2}
                                 used={usedKeys.includes(4)}/>
-                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
                                 onClick={() => handleClick(small3.toString(), 5)} value={small3}
                                 used={usedKeys.includes(5)}/>
-                        <Number newNum={false} big={false} isPlaying={isPlaying}
+                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
                                 onClick={() => handleClick(small4.toString(), 6)} value={small4}
                                 used={usedKeys.includes(6)}/>
                     </div>
@@ -463,8 +481,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     <button className={"round-clickable"} onClick={() => handleClick("<-")}><FontAwesomeIcon
                         icon={faBackspace}/></button>
                 </div>
-                    <button className={"round-clickable"} onClick={() => handleClick("AC")}><FontAwesomeIcon
-                        icon={faRefresh}/></button>
+                <button className={"round-clickable"} onClick={() => handleClick("AC")}><FontAwesomeIcon
+                    icon={faRefresh}/></button>
             </div>
         </div>
 

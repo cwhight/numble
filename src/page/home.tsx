@@ -70,7 +70,7 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
                 target: null
             },
             showModal: true,
-            showScoresModal: false
+            showScoresModal: false,
         };
     }
 
@@ -97,6 +97,7 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
     showScoresModal() {
         this.setState({showScoresModal: !this.state.showScoresModal})
     }
+
 
     render() {
         return (
