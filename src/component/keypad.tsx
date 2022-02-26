@@ -79,13 +79,46 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     let lastPlayed = localStorage.getItem("lastPlayed")
 
     let today = new Date().setHours(0, 0, 0, 0)
+
     const lastPlayedInt = parseInt(lastPlayed)
     const [solved, setSolved] = useState(JSON.parse(localStorage.getItem("solved")) as boolean || false)
 
+    const cacheNewNumbers = (numbers: number[]) => {
+        setNewNumbers(numbers)
+        localStorage.setItem("newNumbers", JSON.stringify(numbers))
+    }
+
+    const cacheUsedKeys = (keys: number[]) => {
+        setUsedKeys(keys)
+        localStorage.setItem("usedKeys", JSON.stringify(keys))
+    }
     let played: boolean
+    const retry = () => {
+        clear()
+        setKey(key + 1)
+        // setTimeRemaining(120)
+        // setElapsedTime(0)
+        // setHasBeenPaused(false)
+        // cacheTimeRemaining(120, 0)
+        setDuration(120)
+        setHasRetried(true)
+    }
+
+    if (lastPlayedInt < today ) {
+        cacheNewNumbers([])
+        cacheUsedKeys([])
+        setTypedKeys([])
+        setSolved(false)
+        localStorage.setItem("solved", "false")
+        localStorage.setItem("todaysTime", "0")
+        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
+        retry()
+    }
+
     if (lastPlayedInt >= today && !hasPlayedToday) {
         setHasPlayedToday(true)
         played = true
+
     }
 
     if (!hasPlayedToday && !played && attempts != 0) {
@@ -96,6 +129,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         }
         setAttempts(0)
         localStorage.setItem("attempts", "0")
+
     }
 
     const big1 = bigNums[0]
@@ -166,15 +200,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         localStorage.setItem("elapsedTime", JSON.stringify(elapsed))
     }
 
-    const cacheNewNumbers = (numbers: number[]) => {
-        setNewNumbers(numbers)
-        localStorage.setItem("newNumbers", JSON.stringify(numbers))
-    }
-
-    const cacheUsedKeys = (keys: number[]) => {
-        setUsedKeys(keys)
-        localStorage.setItem("usedKeys", JSON.stringify(keys))
-    }
 
     function clearTotals() {
         setTotals({
@@ -198,16 +223,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const [hasRetried, setHasRetried] = useState<boolean>(false)
 
-    const retry = () => {
-        clear()
-        setKey(key + 1)
-        // setTimeRemaining(120)
-        // setElapsedTime(0)
-        // setHasBeenPaused(false)
-        // cacheTimeRemaining(120, 0)
-        setDuration(120)
-        setHasRetried(true)
-    }
+
 
     const saveScore = async (success: boolean, timeRemaining: number): Promise<void> => {
         if (!hasPlayedToday) {
