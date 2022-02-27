@@ -11,10 +11,12 @@ export interface FinishedModalProps {
     show: boolean
     timerRef: any
     attempts: number
+    currentStreak: number
+    maxStreak: number
 }
 
 export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModalProps) => {
-    const {success, clear, score, timeTaken, timerRef, attempts} = props
+    const {success, clear, score, timeTaken, timerRef, attempts, currentStreak, maxStreak} = props
     let show = props.show
     const reset = () => {
         clear()
@@ -46,14 +48,6 @@ https://www.numble-game.co.uk`;
     }
 
     const message = success ? `Great Work - you solved it in ${timeTaken} seconds` : "Unlucky this time"
-
-    const write = (imgBlob: any) => {
-        navigator.clipboard.write([
-            new ClipboardItem({
-                'image/png': imgBlob, // change image type accordingly
-            })
-        ])
-    }
 
     const copyMessage = showCopyMsg ? <span>{msg}</span> : null
 

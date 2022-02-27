@@ -6,6 +6,7 @@ import {FinishedModal} from "./finished_modal";
 import {CountdownCircleTimer} from 'react-countdown-circle-timer'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import ReactGA from 'react-ga';
+
 const TRACKING_ID = "UA-221463714-1"; // YOUR_OWN_TRACKING_ID
 
 ReactGA.initialize(TRACKING_ID);
@@ -45,7 +46,6 @@ interface KeyPadProps {
     target: number
     showClock: boolean
 }
-
 
 export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
@@ -87,6 +87,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         localStorage.setItem("scores", JSON.stringify(scoresSet))
         scores = scoresSet
     }
+
+    const [currentStreak, setCurrentStreak] = useState<number>(JSON.parse(localStorage.getItem("currentStreak")) as number || 0)
+    const [maxStreak, setMaxStreak] = useState<number>(JSON.parse(localStorage.getItem("currentStreak")) as number || 0)
 
     let lastPlayed = localStorage.getItem("lastPlayed")
     let today = new Date().setHours(0, 0, 0, 0)
@@ -184,8 +187,19 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             value: 120 - timeRemaining
         })
 
+        let newStreak = currentStreak + 1;
+        localStorage.setItem("currentStreak", newStreak.toString())
+        setCurrentStreak(newStreak)
+
+
+        if (newStreak > maxStreak) {
+            localStorage.setItem("maxStreak", newStreak.toString())
+            setMaxStreak(newStreak)
+        }
+
         if (attempts == 0) {
             localStorage.setItem("todaysTime", (120 - timeRemaining).toString())
+            saveScore(success, timeRemaining)
         }
 
         const newAttempts = attempts + 1
@@ -202,7 +216,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         localStorage.setItem("solved", "true")
 
         setIsPlaying(false)
-        saveScore(newAttempts, success, timeRemaining)
     }
 
     const timeUp = () => {
@@ -211,14 +224,18 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             action: 'Lost'
         })
 
+        if (attempts == 0) {
+            saveScore(false, 0)
+        }
+
         localStorage.setItem("finished", "true")
         const newAttempts = attempts + 1
         setAttempts(newAttempts)
         localStorage.setItem("attempts", (newAttempts).toString())
-        
+        localStorage.setItem("currentStreak", "0")
+
         setIsPlaying(false)
         setIsFinished({finished: true, success: false})
-        saveScore(newAttempts, false, 0)
         setTimeRemaining(120)
         setElapsedTime(0)
         setHasBeenPaused(false)
@@ -231,25 +248,25 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
 
-    const saveScore = async (tries: number, success: boolean, timeRemaining: number) => {
-        if (tries <= 1) {
-            const timeTaken = 120 - timeRemaining
-            if (success) {
-                if (scores.gamesWon == 0 || scores.gamesWon == null) {
-                    scores.averageTime = timeTaken
-                } else {
-                    scores.averageTime = (scores.averageTime * scores.gamesWon + timeTaken) / (scores.gamesWon + 1)
-                }
-                scores.gamesWon += 1
+    const saveScore = async (success: boolean, timeRemaining: number) => {
+        const timeTaken = 120 - timeRemaining
+        if (success) {
+            if (scores.gamesWon == 0 || scores.gamesWon == null) {
+                scores.averageTime = timeTaken
+            } else {
+                scores.averageTime = (scores.averageTime * scores.gamesWon + timeTaken) / (scores.gamesWon + 1)
             }
-            if ((timeTaken < scores.bestTime || scores.bestTime == undefined) && success) {
-                scores.bestTime = timeTaken
-            }
-            scores.gamesPlayed += 1
-
-            localStorage.setItem("scores", JSON.stringify(scores))
-            localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
+            scores.gamesWon += 1
         }
+
+        if ((timeTaken < scores.bestTime || scores.bestTime == undefined) && success) {
+            scores.bestTime = timeTaken
+        }
+        scores.gamesPlayed += 1
+
+        localStorage.setItem("scores", JSON.stringify(scores))
+        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
+
 
         setHasPlayedToday(true)
     }
@@ -414,8 +431,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     })
 
 
-
-
     const play = () => {
         localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
         if (solved) {
@@ -440,7 +455,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <div>
-                <FinishedModal attempts={attempts} timerRef={timerRef} timeTaken={120 - timeRemaining} score={scores}
+                <FinishedModal currentStreak={currentStreak} maxStreak={maxStreak} attempts={attempts}
+                               timerRef={timerRef} timeTaken={120 - timeRemaining} score={scores}
                                clear={() => retry()}
                                show={finished.finished} success={finished.success}/>
 
