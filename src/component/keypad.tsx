@@ -202,7 +202,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         localStorage.setItem("solved", "true")
 
         setIsPlaying(false)
-        saveScore(success, timeRemaining)
+        saveScore(newAttempts, success, timeRemaining)
     }
 
     const timeUp = () => {
@@ -215,10 +215,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         const newAttempts = attempts + 1
         setAttempts(newAttempts)
         localStorage.setItem("attempts", (newAttempts).toString())
-
+        
         setIsPlaying(false)
         setIsFinished({finished: true, success: false})
-        saveScore(false, 0)
+        saveScore(newAttempts, false, 0)
         setTimeRemaining(120)
         setElapsedTime(0)
         setHasBeenPaused(false)
@@ -231,8 +231,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
 
-    const saveScore = async (success: boolean, timeRemaining: number) => {
-        if (!hasPlayedToday) {
+    const saveScore = async (tries: number, success: boolean, timeRemaining: number) => {
+        if (tries <= 1) {
             const timeTaken = 120 - timeRemaining
             if (success) {
                 if (scores.gamesWon == 0 || scores.gamesWon == null) {
