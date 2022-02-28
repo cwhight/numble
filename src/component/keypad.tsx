@@ -187,19 +187,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             value: 120 - timeRemaining
         })
 
-        let newStreak = currentStreak + 1;
-        localStorage.setItem("currentStreak", newStreak.toString())
-        setCurrentStreak(newStreak)
-
-
-        if (newStreak > maxStreak) {
-            localStorage.setItem("maxStreak", newStreak.toString())
-            setMaxStreak(newStreak)
-        }
-
         if (attempts == 0) {
             localStorage.setItem("todaysTime", (120 - timeRemaining).toString())
             saveScore(success, timeRemaining)
+            let newStreak = currentStreak + 1;
+            localStorage.setItem("currentStreak", newStreak.toString())
+            setCurrentStreak(newStreak)
+
+            if (newStreak > maxStreak) {
+                localStorage.setItem("maxStreak", newStreak.toString())
+                setMaxStreak(newStreak)
+            }
         }
 
         const newAttempts = attempts + 1
@@ -233,6 +231,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         setAttempts(newAttempts)
         localStorage.setItem("attempts", (newAttempts).toString())
         localStorage.setItem("currentStreak", "0")
+        setCurrentStreak(0)
 
         setIsPlaying(false)
         setIsFinished({finished: true, success: false})
@@ -248,7 +247,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
 
-    const saveScore = async (success: boolean, timeRemaining: number) => {
+    const saveScore = (success: boolean, timeRemaining: number) => {
         const timeTaken = 120 - timeRemaining
         if (success) {
             if (scores.gamesWon == 0 || scores.gamesWon == null) {
