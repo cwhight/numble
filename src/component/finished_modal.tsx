@@ -10,13 +10,12 @@ export interface FinishedModalProps {
     success: boolean
     show: boolean
     timerRef: any
-    attempts: number
     currentStreak: number
     maxStreak: number
 }
 
 export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModalProps) => {
-    const {success, clear, score, timeTaken, timerRef, attempts, currentStreak, maxStreak} = props
+    const {success, clear, score, timeTaken, timerRef, currentStreak, maxStreak} = props
     let show = props.show
     const reset = () => {
         clear()
@@ -27,13 +26,10 @@ export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModal
     const [msg, setMsg] = useState("");
 
     async function copyToClipboard() {
-        const attemptString = attempts == 1 ? "attempt" : "attempts"
 
         const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
-Today's Time: ${
-            success ? attempts + " " + attemptString + ": " + timeTaken + " Seconds" : ""
-        }
-Average Time: ${score.gamesWon > 0 ? score.averageTime + " Seconds" : "N/A"}
+${success ? `Today's Time: 🎉 ${timeTaken} Seconds 🎉` : ""}
+Average Time: ${score.gamesWon > 0 ?  Math.round(score.averageTime) + " Seconds" : "N/A"}
 Best Time: ${score.gamesWon > 0 ? score.bestTime + " Seconds" : "N/A"}
 https://www.numble-game.co.uk`;
 
@@ -68,8 +64,8 @@ https://www.numble-game.co.uk`;
             <h2>{message}</h2>
             <h4><em>Games played:</em> {score.gamesPlayed}</h4>
             <h4><em>Games won:</em> {score.gamesWon}</h4>
-            <h4><em>Average Time:</em> {score.gamesWon > 0 ? score.averageTime + " Seconds" : "N/A"}</h4>
-            <h4><em>Best Score:</em> {score.gamesWon > 0 ? score.averageTime + " Seconds" : "N/A"}</h4>
+            <h4><em>Average Time:</em> {score.gamesWon > 0 ? Math.round(score.averageTime) + " Seconds" : "N/A"}</h4>
+            <h4><em>Best Score:</em> {score.gamesWon > 0 ? score.bestTime + " Seconds" : "N/A"}</h4>
             {buttons}
         </div>
     </div>

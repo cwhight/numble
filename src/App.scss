@@ -175,6 +175,10 @@ h1 {
   transition: all 0.2s;
 }
 
+.stop-watch {
+  font-size: 3rem;
+}
+
 .time-wrapper .time.up {
   opacity: 0;
   transform: translateY(-100%);

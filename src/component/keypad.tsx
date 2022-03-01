@@ -22,6 +22,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import Pause from "./pause";
 import Play from "./plat";
+import CountUp, {useCountUp} from "react-countup";
+import Timer from "react-compound-timerv2";
 
 function isNumber(item: any) {
     return !!item.match(/[0-9]+/);
@@ -53,36 +55,29 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const [showClock, setShowClock] = useState<boolean>(props.showClock)
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
-    const [attempts, setAttempts] = useState<number>(JSON.parse(localStorage.getItem("attempts")) as number || 0)
     const [numbers, setNewNumbers] = useState<number[]>(JSON.parse(localStorage.getItem("newNumbers")) as number[] || [])
     const [totals, setTotals] = useState({equals: false, total: null, next: null, operation: null});
 
     const [typedKeys, setTypedKeys] = useState<number[]>([])
     const [usedKeys, setUsedKeys] = useState<number[]>(JSON.parse(localStorage.getItem("usedKeys")) as number[] || [])
 
-    const [timeRemaining, setTimeRemaining] = useState<number>(120)
-    const [elapsedTime, setElapsedTime] = useState<number>(0)
+    const parsedElapsedTime = JSON.parse(localStorage.getItem("elapsedTime")) as number || 0
+    const [elapsedTimeState, setElapsedTimeState] = useState<number>(parsedElapsedTime)
+
 
     const [finished, setIsFinished] = useState<finished>({finished: false, success: false})
     const [hasPlayedToday, setHasPlayedToday] = useState<boolean>(false)
     const [solved, setSolved] = useState(JSON.parse(localStorage.getItem("solved")) as boolean || false)
-    const [hasRetried, setHasRetried] = useState<boolean>(false)
 
     const [hasBeenResetToday, setHasBeenResetToday] = useState<boolean>(false)
-    const [key, setKey] = useState(0)
-    const [hasBeenPaused, setHasBeenPaused] = useState<boolean>(false)
 
-    let parsedStorageTime = JSON.parse(localStorage.getItem("timeRemaining")) as number;
-    let parsedElapsedTime = JSON.parse(localStorage.getItem("elapsedTime")) as number;
-    let durationCalc = hasBeenPaused ? parsedStorageTime + parsedElapsedTime : hasRetried ? 120 : parsedStorageTime || 120
-    const [duration, setDuration] = useState<number>(durationCalc)
     let scores = JSON.parse(localStorage.getItem("scores")) as score
     if (scores == undefined) {
         let scoresSet = {
             averageTime: 0,
             gamesPlayed: 0,
             gamesWon: 0,
-            bestTime: 120
+            bestTime: 0
         };
         localStorage.setItem("scores", JSON.stringify(scoresSet))
         scores = scoresSet
@@ -106,6 +101,10 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         localStorage.setItem("usedKeys", JSON.stringify(keys))
     }
 
+    const cacheTimeRemaining = (elapsed: number) => {
+        localStorage.setItem("elapsedTime", JSON.stringify(elapsed))
+    }
+
     function clearTotals() {
         setTotals({
             equals: false,
@@ -126,13 +125,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         })
     }
 
-    const retry = () => {
-        clear()
-        setDuration(120)
-        setKey(key + 1)
-        setHasRetried(true)
-    }
-
     if (lastPlayedInt < today && !hasBeenResetToday) {
         cacheNewNumbers([])
         cacheUsedKeys([])
@@ -140,8 +132,8 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         setSolved(false)
         localStorage.setItem("solved", "false")
         localStorage.setItem("todaysTime", "0")
-        localStorage.setItem("attempts", "0")
-        retry()
+        setElapsedTimeState(0)
+        cacheTimeRemaining( 0)
         setHasBeenResetToday(true)
     }
 
@@ -149,17 +141,14 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     if (lastPlayedInt >= today && !hasPlayedToday) {
         setHasPlayedToday(true)
         played = true
-
     }
 
-    if (!hasPlayedToday && !played && attempts != 0) {
+    if (!hasPlayedToday && !played) {
         if (solved) {
             setSolved(false)
             localStorage.setItem("solved", "false")
             localStorage.setItem("todaysTime", "0")
         }
-        setAttempts(0)
-        localStorage.setItem("attempts", "0")
     }
 
     const big1 = bigNums[0]
@@ -184,25 +173,20 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         ReactGA.event({
             category: 'Game',
             action: 'Won',
-            value: 120 - timeRemaining
+            value: elapsedTimeState
         })
 
-        if (attempts == 0) {
-            localStorage.setItem("todaysTime", (120 - timeRemaining).toString())
-            saveScore(success, timeRemaining)
-            let newStreak = currentStreak + 1;
-            localStorage.setItem("currentStreak", newStreak.toString())
-            setCurrentStreak(newStreak)
+        localStorage.setItem("todaysTime", elapsedTimeState.toString())
+        saveScore(success, elapsedTimeState)
+        let newStreak = currentStreak + 1;
+        localStorage.setItem("currentStreak", newStreak.toString())
+        setCurrentStreak(newStreak)
 
-            if (newStreak > maxStreak) {
-                localStorage.setItem("maxStreak", newStreak.toString())
-                setMaxStreak(newStreak)
-            }
+        if (newStreak > maxStreak) {
+            localStorage.setItem("maxStreak", newStreak.toString())
+            setMaxStreak(newStreak)
         }
 
-        const newAttempts = attempts + 1
-        setAttempts(newAttempts)
-        localStorage.setItem("attempts", (newAttempts).toString())
         localStorage.setItem("finished", "true")
 
         setIsFinished({
@@ -216,39 +200,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         setIsPlaying(false)
     }
 
-    const timeUp = () => {
-        ReactGA.event({
-            category: 'Game',
-            action: 'Lost'
-        })
-
-        if (attempts == 0) {
-            saveScore(false, 0)
-        }
-
-        localStorage.setItem("finished", "true")
-        const newAttempts = attempts + 1
-        setAttempts(newAttempts)
-        localStorage.setItem("attempts", (newAttempts).toString())
-        localStorage.setItem("currentStreak", "0")
-        setCurrentStreak(0)
-
-        setIsPlaying(false)
-        setIsFinished({finished: true, success: false})
-        setTimeRemaining(120)
-        setElapsedTime(0)
-        setHasBeenPaused(false)
-        cacheTimeRemaining(120, 0)
-    }
-
-    const cacheTimeRemaining = (time: number, elapsed: number) => {
-        localStorage.setItem("timeRemaining", JSON.stringify(time))
-        localStorage.setItem("elapsedTime", JSON.stringify(elapsed))
-    }
-
-
-    const saveScore = (success: boolean, timeRemaining: number) => {
-        const timeTaken = 120 - timeRemaining
+    const saveScore = (success: boolean, timeTaken: number) => {
         if (success) {
             if (scores.gamesWon == 0 || scores.gamesWon == null) {
                 scores.averageTime = timeTaken
@@ -359,10 +311,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         const newTotals = calculate(totals, value)
 
         setTotals(newTotals);
-        // if (key != null) {
-        //     typedKeys.push(key)
-        //     setTypedKeys(typedKeys)
-        // }
 
         if (newTotals.equals) {
             if (newTotals.total == target) {
@@ -385,50 +333,11 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         }
     };
 
-    const renderTime = ({remainingTime, elapsedTime}: any) => {
-        setElapsedTime(elapsedTime)
-        setTimeRemaining(remainingTime)
-        const currentTime = useRef(remainingTime);
-        const prevTime = useRef(null);
-        const isNewTimeFirstTick = useRef(false);
-        const [, setOneLastRerender] = useState(0);
-
-        if (currentTime.current !== remainingTime) {
-            isNewTimeFirstTick.current = true;
-            prevTime.current = currentTime.current;
-            currentTime.current = remainingTime;
-        } else {
-            isNewTimeFirstTick.current = false;
-        }
-
-        // force one last re-render when the time is over to tirgger the last animation
-        if (remainingTime === 0) {
-            setTimeout(() => {
-                setOneLastRerender((val) => val + 1);
-            }, 20);
-        }
-
-        const isTimeUp = isNewTimeFirstTick.current;
-
-        if (isTimeUp) {
-            setElapsedTime(0)
-            setTimeRemaining(120)
-        }
-        return (
-            <div className="time-wrapper">
-                <div key={remainingTime} className={`time ${isTimeUp ? "up" : ""}`}>
-                    {remainingTime}
-                </div>
-            </div>
-        );
-    };
-
     let newNums = numbers.map((num, i) => {
         return <Number solved={solved} newNum={true} big={false} isPlaying={isPlaying}
                        onClick={() => handleClick(num.toString(), 7 + i)} value={num}
                        used={usedKeys.includes(7 + i)}/>
     })
-
 
     const play = () => {
         localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
@@ -438,45 +347,58 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
         setShowClock(true)
         if (isPlaying) {
-            cacheTimeRemaining(timeRemaining, elapsedTime)
             setShowClock(false)
-            setHasBeenPaused(true)
-        } else {
-            setDuration(durationCalc)
-            setHasRetried(false)
         }
 
         setIsPlaying(!isPlaying)
     }
 
-
     let timerRef = React.createRef<HTMLDivElement>()
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <div>
-                <FinishedModal currentStreak={currentStreak} maxStreak={maxStreak} attempts={attempts}
-                               timerRef={timerRef} timeTaken={120 - timeRemaining} score={scores}
-                               clear={() => retry()}
+                <FinishedModal currentStreak={currentStreak} maxStreak={maxStreak}
+                               timerRef={timerRef} timeTaken={elapsedTimeState} score={scores}
+                               clear={() => {}}
                                show={finished.finished} success={finished.success}/>
 
-                <div ref={timerRef} className={`timer-wrapper mb-3 ${!showClock ? "display-none" : ""}`}>
-                    <CountdownCircleTimer
-                        size={120}
-                        key={key}
-                        isPlaying={isPlaying && !solved}
-                        duration={duration}
-                        colors={['#004777', '#F7B801', '#A30000', '#A30000']}
-                        colorsTime={[45, 30, 10, 0]}
-                        onComplete={(time: number) => timeUp()}
+                <div ref={timerRef} className={`timer-wrapper mb-3`}>
+                    <Timer
+                        onStart={() => play()}
+                        onPause={() => play()}
+                        initialTime={parsedElapsedTime * 1000} startImmediately={false}
                     >
-                        {renderTime}
-                    </CountdownCircleTimer>
+                        {({start, pause, getTime, stop}: any) => {
+                            const elapsedTime = Math.floor(getTime()/1000)
+                            setElapsedTimeState(elapsedTime)
+                            if (solved) {
+                                pause()
+                            }
+                            return (
+                                    <React.Fragment>
+                                        <div className={"d-flex flex-column"}>
+                                            <div className={"stopwatch d-flex"}>
+                                                <h1>{elapsedTime < 600 ? "0" :"" }<Timer.Minutes />:</h1><h1>{elapsedTime % 60 < 10 ? "0" : ""}<Timer.Seconds/></h1>
+                                            </div>
+                                            <br/>
+                                            <div className={"mb-3"}>
+                                                {isPlaying ? <Pause onPlayerClick={() => {
+                                                    pause()
+                                                    cacheTimeRemaining(elapsedTime)
+                                                    setElapsedTimeState(elapsedTime)
+                                                }}/> : <Play onPlayerClick={start}/>}
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
+                                )
+                            }
+                        }
+
+                    </Timer>
                 </div>
             </div>
             <div>
-                <div className={"mb-3"}>
-                    {isPlaying ? <Pause onPlayerClick={() => play()}/> : <Play onPlayerClick={() => play()}/>}
-                </div>
+
                 <div className={"p-3 text-center my-1 mx-2"}>
                     <h1 className={"target"}>{isPlaying || solved ? target :
                         <FontAwesomeIcon icon={faQuestion}/>}</h1>
