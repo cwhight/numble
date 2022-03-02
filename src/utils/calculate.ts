@@ -27,7 +27,6 @@ export default function calculate(obj: any, buttonName: any) {
         // If there is an operation, update next
         if (obj.operation) {
             // return { ...obj, next: buttonName };
-            console.log("helllllooooooo")
             return {
                 equals: true,
                 total: operate(obj.total, buttonName, obj.operation),

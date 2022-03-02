@@ -1,15 +1,10 @@
 import Big from 'big.js';
 
 export default function operate(numberOne: any, numberTwo: any, operation: any) {
-    console.log("we're in operate")
 
-    console.log(numberOne)
-    console.log(numberTwo)
     const one = Big(numberOne);
     const two = Big(numberTwo);
 
-    console.log("1 is" + one)
-    console.log("2 is" + two)
     if (operation === '+') {
         return one.plus(two).toString();
     }

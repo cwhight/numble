@@ -179,15 +179,7 @@ h1 {
   font-size: 3rem;
 }
 
-.time-wrapper .time.up {
-  opacity: 0;
-  transform: translateY(-100%);
-}
 
-.time-wrapper .time.down {
-  opacity: 0;
-  transform: translateY(100%);
-}
 
 .result-modal {
   min-height: 50vh;

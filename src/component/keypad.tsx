@@ -5,7 +5,7 @@ import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
 import {CountdownCircleTimer} from 'react-countdown-circle-timer'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import ReactGA from 'react-ga';
+import ReactGA, {set} from 'react-ga';
 
 const TRACKING_ID = "UA-221463714-1"; // YOUR_OWN_TRACKING_ID
 
@@ -55,15 +55,16 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
     const [showClock, setShowClock] = useState<boolean>(props.showClock)
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
-    const [numbers, setNewNumbers] = useState<number[]>(JSON.parse(localStorage.getItem("newNumbers")) as number[] || [])
+    const [newNumbers, setNewNumbers] = useState<number[]>(JSON.parse(localStorage.getItem("newNumbers")) as number[] || [])
     const [totals, setTotals] = useState({equals: false, total: null, next: null, operation: null});
 
     const [typedKeys, setTypedKeys] = useState<number[]>([])
+    const [previousCalc, setPreviousCalc] = useState<number>(0)
+
     const [usedKeys, setUsedKeys] = useState<number[]>(JSON.parse(localStorage.getItem("usedKeys")) as number[] || [])
 
     const parsedElapsedTime = JSON.parse(localStorage.getItem("elapsedTime")) as number || 0
     const [elapsedTimeState, setElapsedTimeState] = useState<number>(parsedElapsedTime)
-
 
     const [finished, setIsFinished] = useState<finished>({finished: false, success: false})
     const [hasPlayedToday, setHasPlayedToday] = useState<boolean>(false)
@@ -218,7 +219,6 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         localStorage.setItem("scores", JSON.stringify(scores))
         localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
 
-
         setHasPlayedToday(true)
     }
 
@@ -245,8 +245,12 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         operation: totals.operation
                     }
                 )
-                typedKeys.pop()
-                setTypedKeys(typedKeys)
+                if (typedKeys.length > 0) {
+                    typedKeys.pop()
+                    setTypedKeys(typedKeys)
+                } else {
+                    setPreviousCalc(0)
+                }
             } else if (totals.operation) {
                 setTotals(
                     {
@@ -265,8 +269,12 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                         operation: null
                     }
                 )
-                typedKeys.pop()
-                setTypedKeys(typedKeys)
+                if (typedKeys.length > 0) {
+                    typedKeys.pop()
+                    setTypedKeys(typedKeys)
+                } else {
+                    setPreviousCalc(0)
+                }
             }
             return
         }
@@ -276,33 +284,40 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             usedKeys.pop()
             usedKeys.pop()
             cacheUsedKeys(usedKeys)
-            numbers.pop()
-            cacheNewNumbers(numbers)
+            newNumbers.pop()
+            cacheNewNumbers(newNumbers)
             clearTotals()
             return
         }
 
         if (isNumber(value)) {
-            if (typedKeys[0] == key) {
+            if (typedKeys[0] == key || previousCalc == key) {
                 if (totals.operation) {
                     return
                 } else {
-                    typedKeys.pop()
-                    setTypedKeys(typedKeys)
-                    setTotals(
-                        {
-                            equals: false,
-                            total: totals.total,
-                            next: null,
-                            operation: totals.operation
-                        }
-                    )
+                    if (previousCalc == key) {
+                        typedKeys.push(previousCalc)
+                        setPreviousCalc(0)
+                        setTypedKeys(typedKeys)
+                    } else {
+                        typedKeys.pop()
+                        setTypedKeys(typedKeys)
+                        setTotals(
+                            {
+                                equals: false,
+                                total: totals.total,
+                                next: null,
+                                operation: totals.operation
+                            }
+                        )
+                    }
                 }
                 return
             } else {
                 if (!totals.operation) {
                     typedKeys.pop()
                 }
+                setPreviousCalc(0)
                 typedKeys.push(key)
                 setTypedKeys(typedKeys)
             }
@@ -319,21 +334,22 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             }
 
             usedKeys.push(typedKeys[0])
-            usedKeys.push(typedKeys[1])
+            typedKeys.length > 1 ? usedKeys.push(typedKeys[1]) : usedKeys.push(newNumbers.length + 6)
+            setPreviousCalc(newNumbers.length + 7)
             setTypedKeys([])
             cacheUsedKeys(usedKeys)
-            numbers.push(newTotals.total)
-            cacheNewNumbers(numbers)
+            newNumbers.push(newTotals.total)
+            cacheNewNumbers(newNumbers)
             setTotals({
                 equals: false,
                 total: null,
-                next: null,
+                next: newTotals.total,
                 operation: null,
             })
         }
     };
 
-    let newNums = numbers.map((num, i) => {
+    let newNums = newNumbers.map((num, i) => {
         return <Number solved={solved} newNum={true} big={false} isPlaying={isPlaying}
                        onClick={() => handleClick(num.toString(), 7 + i)} value={num}
                        used={usedKeys.includes(7 + i)}/>
