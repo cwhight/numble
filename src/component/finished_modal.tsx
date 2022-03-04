@@ -24,13 +24,13 @@ export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModal
 
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
-
+    let minutes = Math.floor(timeTaken / 60)
+    let seconds = timeTaken % 60
+    let timeMessage = `${minutes < 10 ? "0" + minutes : {minutes}}:${seconds < 10 ? "0" + seconds : seconds}`
     async function copyToClipboard() {
 
         const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
-${success ? `Today's Time: 🎉 ${timeTaken} Seconds 🎉` : ""}
-Average Time: ${score.gamesWon > 0 ?  Math.round(score.averageTime) + " Seconds" : "N/A"}
-Best Time: ${score.gamesWon > 0 ? score.bestTime + " Seconds" : "N/A"}
+${success ? `Today's Time: 🎉 ${timeMessage} 🎉` : ""}
 https://www.numble-game.co.uk`;
 
         setMsg("Copied to clipboard!");

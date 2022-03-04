@@ -16,6 +16,11 @@ export const ScoresModal: React.FC<ScoresModalProps> = (props: ScoresModalProps)
     }
 
     let todaysScore = JSON.parse(localStorage.getItem("todaysTime")) as number || 0
+        let minutes = Math.floor(todaysScore / 60)
+        let seconds = todaysScore % 60
+    let timeMessage = `${minutes < 10 ? "0" + minutes : {minutes}}:${seconds < 10 ? "0" + seconds : seconds}`
+
+
 
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
@@ -24,10 +29,8 @@ export const ScoresModal: React.FC<ScoresModalProps> = (props: ScoresModalProps)
 
         const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
 ${
-            todaysScore != 0 ? `Today's Time: 🎉 ${todaysScore} Seconds 🎉` : ""
+            todaysScore != 0 ? `Today's Time: 🎉 ${timeMessage} 🎉` : ""
         }
-Average Time: ${scores.gamesWon > 0 ? Math.round(scores.averageTime) + " Seconds" : "N/A"}
-Best Time: ${scores.gamesWon > 0 ? scores.bestTime + " Seconds" : "N/A"}
 https://www.numble-game.co.uk`;
 
         setMsg("Copied to clipboard!");
