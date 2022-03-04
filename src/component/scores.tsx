@@ -20,7 +20,8 @@ export const ScoresModal: React.FC<ScoresModalProps> = (props: ScoresModalProps)
         let seconds = todaysScore % 60
     let timeMessage = `${minutes < 10 ? "0" + minutes : {minutes}}:${seconds < 10 ? "0" + seconds : seconds}`
 
-
+    const streak = localStorage.getItem("currentStreak")
+    const maxStreak = localStorage.getItem("maxStreak")
 
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
@@ -67,6 +68,8 @@ https://www.numble-game.co.uk`;
             <h4><em>Games won:</em> {scores.gamesWon}</h4>
             <h4><em>Average Time:</em> {scores.gamesWon > 0 ? Math.round(scores.averageTime) + " Seconds" : "N/A"}</h4>
             <h4><em>Best Score:</em> {scores.gamesWon > 0 ? scores.bestTime + " Seconds": "N/A"}</h4>
+            <h4><em>Streak:</em> {streak}</h4>
+            <h4><em>Max Streak:</em> {maxStreak}</h4>
             {buttons}
         </div>
     </div>

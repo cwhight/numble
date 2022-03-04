@@ -88,8 +88,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     const [maxStreak, setMaxStreak] = useState<number>(JSON.parse(localStorage.getItem("currentStreak")) as number || 0)
 
     let lastPlayed = localStorage.getItem("lastPlayed")
+    const lastWon = parseInt(localStorage.getItem("lastWon"))
     let today = new Date().setHours(0, 0, 0, 0)
-
+    let yesterday = today - 86400000
     const lastPlayedInt = parseInt(lastPlayed)
 
     const cacheNewNumbers = (numbers: number[]) => {
@@ -176,10 +177,17 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             action: 'Won',
             value: elapsedTimeState
         })
+        localStorage.setItem("lastWon", JSON.stringify(Date.now()))
 
         localStorage.setItem("todaysTime", elapsedTimeState.toString())
         saveScore(success, elapsedTimeState)
-        let newStreak = currentStreak + 1;
+        let newStreak: number
+        if (lastWon > yesterday) {
+            newStreak = currentStreak + 1;
+        } else {
+            newStreak = 1
+        }
+
         localStorage.setItem("currentStreak", newStreak.toString())
         setCurrentStreak(newStreak)
 

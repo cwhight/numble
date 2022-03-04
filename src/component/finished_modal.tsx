@@ -66,6 +66,8 @@ https://www.numble-game.co.uk`;
             <h4><em>Games won:</em> {score.gamesWon}</h4>
             <h4><em>Average Time:</em> {score.gamesWon > 0 ? Math.round(score.averageTime) + " Seconds" : "N/A"}</h4>
             <h4><em>Best Score:</em> {score.gamesWon > 0 ? score.bestTime + " Seconds" : "N/A"}</h4>
+            <h4><em>Streak:</em> {currentStreak}</h4>
+            <h4><em>Max Streak:</em> {maxStreak}</h4>
             {buttons}
         </div>
     </div>
