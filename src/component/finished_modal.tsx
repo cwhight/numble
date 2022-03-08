@@ -26,7 +26,7 @@ export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModal
     const [msg, setMsg] = useState("");
     let minutes = Math.floor(timeTaken / 60)
     let seconds = timeTaken % 60
-    let timeMessage = `${minutes < 10 ? "0" + minutes : {minutes}}:${seconds < 10 ? "0" + seconds : seconds}`
+    let timeMessage = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`
     async function copyToClipboard() {
 
         const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢

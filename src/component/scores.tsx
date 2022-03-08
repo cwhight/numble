@@ -16,9 +16,9 @@ export const ScoresModal: React.FC<ScoresModalProps> = (props: ScoresModalProps)
     }
 
     let todaysScore = JSON.parse(localStorage.getItem("todaysTime")) as number || 0
-        let minutes = Math.floor(todaysScore / 60)
-        let seconds = todaysScore % 60
-    let timeMessage = `${minutes < 10 ? "0" + minutes : {minutes}}:${seconds < 10 ? "0" + seconds : seconds}`
+    let minutes = Math.floor(todaysScore / 60)
+    let seconds = todaysScore % 60
+    let timeMessage = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`
 
     const streak = localStorage.getItem("currentStreak")
     const maxStreak = localStorage.getItem("maxStreak")
