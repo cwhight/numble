@@ -219,7 +219,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             scores.gamesWon += 1
         }
 
-        if ((timeTaken < scores.bestTime || scores.bestTime == undefined) && success) {
+        if ((timeTaken < scores.bestTime || scores.bestTime == undefined || scores.bestTime == 0) && success) {
             scores.bestTime = timeTaken
         }
         scores.gamesPlayed += 1
