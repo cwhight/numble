@@ -58,18 +58,18 @@ https://www.numble-game.co.uk`;
     const className = show ? "modal-cont display-block" : "modal-cont display-none"
 
     return <div className={className}>
-        <div className={"p-3 modal-main-cont d-flex flex-column justify-content-around align-items-center"}>
+        <div className={"p-3 modal-main-cont d-flex flex-column justify-content-around"}>
 
-            <h2>Welcome to Numble</h2>
-            <p>A daily number puzzle</p>
+            <h2 className={"text-center"}>Welcome to Numble</h2>
+            <p className={"text-center"}>A daily number puzzle</p>
             { todaysScore != 0 ? <h4><em>Today's Time:</em> {todaysScore + " Seconds"} </h4> : null}
 
-            <h4><em>Games played:</em> {scores.gamesPlayed}</h4>
-            <h4><em>Games won:</em> {scores.gamesWon}</h4>
-            <h4><em>Average Time:</em> {scores.gamesWon > 0 ? Math.round(scores.averageTime) + " Seconds" : "N/A"}</h4>
-            <h4><em>Best Score:</em> {scores.gamesWon > 0 ? scores.bestTime + " Seconds": "N/A"}</h4>
-            <h4><em>Streak:</em> {streak}</h4>
-            <h4><em>Max Streak:</em> {maxStreak}</h4>
+            <h4 className={"text-left"}><em>Games played:</em> {scores.gamesPlayed}</h4>
+            <h4 className={"text-left"}><em>Games won:</em> {scores.gamesWon}</h4>
+            <h4 className={"text-left"}><em>Average Time:</em> {scores.gamesWon > 0 ? Math.round(scores.averageTime) + " Seconds" : "N/A"}</h4>
+            <h4 className={"text-left"}><em>Best Score:</em> {scores.gamesWon > 0 ? scores.bestTime + " Seconds": "N/A"}</h4>
+            <h4 className={"text-left"}><em>Streak:</em> {streak}</h4>
+            <h4 className={"text-left"}><em>Max Streak:</em> {maxStreak}</h4>
             {buttons}
 
             <span className={"mt-3"}>Enjoying Numble? Why not try our sister game <a href={"https://www.jumble-game.co.uk"}>Jumble</a></span>
