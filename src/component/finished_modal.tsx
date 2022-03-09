@@ -69,6 +69,8 @@ https://www.numble-game.co.uk`;
             <h4><em>Streak:</em> {currentStreak}</h4>
             <h4><em>Max Streak:</em> {maxStreak}</h4>
             {buttons}
+
+            <span className={"mt-3"}>Enjoying Numble? Why not try our sister game <a href={"https://www.jumble-game.co.uk"}>Jumble</a></span>
         </div>
     </div>
 }
