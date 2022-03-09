@@ -1,7 +1,7 @@
 import React from "react";
 import {Button} from "react-bootstrap";
 import {score} from "./keypad";
-import {faCross} from "@fortawesome/free-solid-svg-icons";
+import {faCircleQuestion, faCross} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export interface FirstModalProps {
@@ -31,6 +31,7 @@ export const FirstModal: React.FC<FirstModalProps> = (props: FirstModalProps) =>
             <p>You begin with 2 large numbers, 4 small numbers and 1 target number</p>
             <p>Perform a series of operations (+, -, x, ÷) between two numbers to get to the total</p>
             <p>Each number can only be used once. Once you've performed one operation the result will be available to use in the next operation.</p>
+            <p>If you're stuck you can get a hint if you click the <FontAwesomeIcon className={"header-links "} icon={faCircleQuestion} />, but it will end your streak</p>
             <p>Try to beat your best time!</p>
             {buttons}
         </div>

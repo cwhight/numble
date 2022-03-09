@@ -1,15 +1,10 @@
-import React, {useEffect, useRef, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Number} from "./number";
 import {Working} from "./working";
 import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
-import {CountdownCircleTimer} from 'react-countdown-circle-timer'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import ReactGA, {set} from 'react-ga';
-
-const TRACKING_ID = "UA-221463714-1"; // YOUR_OWN_TRACKING_ID
-
-ReactGA.initialize(TRACKING_ID);
+import ReactGA from 'react-ga';
 import {
     faBackspace,
     faDivide,
@@ -22,8 +17,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import Pause from "./pause";
 import Play from "./plat";
-import CountUp, {useCountUp} from "react-countup";
 import Timer from "react-compound-timerv2";
+
+const TRACKING_ID = "UA-221463714-1"; // YOUR_OWN_TRACKING_ID
+
+ReactGA.initialize(TRACKING_ID);
 
 function isNumber(item: any) {
     return !!item.match(/[0-9]+/);
@@ -46,12 +44,14 @@ interface KeyPadProps {
     bigNums: number[]
     smallNums: number[]
     target: number
+    hints: string[]
     showClock: boolean
+    refreshState: any
 }
 
 export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
-    const {bigNums, smallNums, target, userId} = props
+    const {bigNums, smallNums, target, userId, hints, refreshState} = props
 
     const [showClock, setShowClock] = useState<boolean>(props.showClock)
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
@@ -137,6 +137,9 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         setElapsedTimeState(0)
         cacheTimeRemaining( 0)
         setHasBeenResetToday(true)
+        localStorage.setItem("hintsUsed", "0")
+        localStorage.setItem("displayedHints", JSON.stringify([]))
+        refreshState()
     }
 
     let played: boolean
@@ -180,12 +183,16 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
         localStorage.setItem("todaysTime", elapsedTimeState.toString())
         saveScore(success, elapsedTimeState)
+        const hintsUsed = JSON.parse(localStorage.getItem("hintsUsed")) as number || 0
         let newStreak: number
-        if (lastWon > yesterday) {
+        if (hintsUsed > 0) {
+            newStreak = 0
+        } else if (lastWon > yesterday) {
             newStreak = currentStreak + 1;
         } else {
             newStreak = 1
         }
+
         localStorage.setItem("lastWon", JSON.stringify(Date.now()))
 
         localStorage.setItem("currentStreak", newStreak.toString())

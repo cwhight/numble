@@ -45,11 +45,11 @@ https://www.numble-game.co.uk`;
     }
     const copyMessage = showCopyMsg ? <span>{msg}</span> : null
 
-    const buttons = <div className={"mt-3 d-flex flex-column"}>
-        <div>
+    const buttons = <div className={"w-100 mt-3 d-flex flex-column"}>
+        <div className={"d-flex justify-content-around w-100"}>
 
-            <Button onClick={() => reset()} className={"mr-3 btn"}>Close</Button>
-            <Button onClick={() => copyToClipboard()} className={"btn"}>Share</Button>
+            <button onClick={() => reset()} className={"mr-3 btn btn-tertiary"}>Close</button>
+            <button onClick={() => copyToClipboard()} className={"btn btn-primary"}>Share</button>
         </div>
         <div>{copyMessage}</div>
 

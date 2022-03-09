@@ -1,5 +1,5 @@
 import React from "react";
-import {Link, RouteComponentProps} from "@reach/router";
+import {RouteComponentProps} from "@reach/router";
 import Cookies from 'js-cookie';
 import {KeyPad, score} from "../component/keypad";
 import axios from "axios"
@@ -7,6 +7,7 @@ import {v4 as uuidv4} from 'uuid';
 import Header from "../component/header";
 import {FirstModal} from "../component/first_modal";
 import {ScoresModal} from "../component/scores";
+import {HintsModal} from "../component/hints_modal";
 
 
 interface HomeProps {
@@ -17,12 +18,15 @@ interface HomeProps {
     isFetching: boolean
     showModal: boolean
     showScoresModal: boolean
+    showHintsModal: boolean
+    refresh: boolean
 }
 
 interface numbers {
     bigNums: number[]
     smallNums: number[]
-    target: number
+    target: number,
+    hints: string
 }
 
 function setScores(data: number[]): score {
@@ -67,10 +71,13 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
             numbers: {
                 bigNums: [],
                 smallNums: [],
-                target: null
+                target: null,
+                hints: ""
             },
             showModal: true,
             showScoresModal: false,
+            showHintsModal: false,
+            refresh: false
         };
     }
 
@@ -98,19 +105,30 @@ export class Home extends React.Component<RouteComponentProps, HomeProps> {
         this.setState({showScoresModal: !this.state.showScoresModal})
     }
 
+    showHintsModal() {
+        this.setState({showHintsModal: !this.state.showHintsModal})
+    }
+
+    refreshState() {
+        this.setState({refresh: !this.state.refresh})
+    }
+
 
     render() {
         return (
             <div>
-                <Header showScores={() => this.showScoresModal()}showRules={() => this.showModal()}/>
+                <Header showScores={() => this.showScoresModal()} showHints={() => this.showHintsModal()} showRules={() => this.showModal()}/>
                 <FirstModal close={()=> this.setState({showModal: false})} show={this.state.showModal} />
                 <ScoresModal scores={this.state.scores} close={()=> this.setState({showScoresModal: false})} show={this.state.showScoresModal} />
+                <HintsModal refresh={this.state.refresh} close={()=> this.setState({showHintsModal: false})} show={this.state.showHintsModal} hints={this.state.numbers.hints?.split(",")} />
                 <KeyPad
+                    refreshState={() => this.refreshState()}
                     showClock={!this.state.showModal}
                     userId={this.state.user}
                     bigNums={this.state.numbers.bigNums}
                     smallNums={this.state.numbers.smallNums}
                     target={this.state.numbers.target}
+                    hints={this.state.numbers.hints?.split(",")}
                 />
             </div>
         );
