@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Score } from "./keypad";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import React, {useState} from "react";
+import {Score} from "./keypad";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faShare, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 
 export interface FinishedModalProps {
     timeTaken: number;
@@ -74,12 +74,6 @@ https://www.numble-game.co.uk`;
                     <button className="modal-close-button" onClick={clear}>
                         <FontAwesomeIcon icon={faTimes} />
                     </button>
-                    {success && (
-                        <div className="success-icon small">
-                            <FontAwesomeIcon icon={faCheck} />
-                        </div>
-                    )}
-                    <h4 className="modal-title">{success ? "Great Work!" : "Time's Up!"}</h4>
                 </div>
 
                 <div className="modal-content">
@@ -120,16 +114,14 @@ https://www.numble-game.co.uk`;
                 </div>
 
                 <div className="modal-footer">
-                    {success && (
-                        <div className="share-buttons">
-                            <button className="modal-button primary" onClick={copyToClipboard}>
-                                <FontAwesomeIcon icon={faShare} /> Copy
-                            </button>
-                            <button className="modal-button whatsapp" onClick={shareToWhatsApp}>
-                                <FontAwesomeIcon icon={faWhatsapp} /> Share
-                            </button>
-                        </div>
-                    )}
+                    <div className="share-buttons">
+                        <button className="modal-button primary" onClick={copyToClipboard}>
+                            <FontAwesomeIcon icon={faShare} /> Copy
+                        </button>
+                        <button className="modal-button whatsapp" onClick={shareToWhatsApp}>
+                            <FontAwesomeIcon icon={faWhatsapp} /> Share
+                        </button>
+                    </div>
                 </div>
 
                 {showCopyMsg && (
