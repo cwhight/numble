@@ -26,7 +26,7 @@ export const Home: React.FC = () => {
         const gameNumbers = generateNumbers();
         return {
             ...gameNumbers,
-            hints: "" // We're not using hints anymore
+            hints: ""
         };
     });
     const [showModal, setShowModal] = useState<boolean>(scores.gamesPlayed === 0);
@@ -51,14 +51,18 @@ export const Home: React.FC = () => {
 
     const toggleModal = () => setShowModal(prev => !prev);
     const toggleScoresModal = () => setShowScoresModal(prev => !prev);
-    const toggleHintsModal = () => setShowHintsModal(prev => !prev);
+    
+    const handleHintRequest = () => {
+        refreshState();
+    };
+
     const refreshState = () => setRefresh(prev => !prev);
 
     return (
         <div>
             <Header 
                 showScores={toggleScoresModal} 
-                showHints={toggleHintsModal} 
+                showHints={() => setShowHintsModal(true)} 
                 showRules={toggleModal}
             />
             <FirstModal 
@@ -74,10 +78,9 @@ export const Home: React.FC = () => {
                 refresh={refresh} 
                 close={() => setShowHintsModal(false)} 
                 show={showHintsModal} 
-                hints={[]} 
             />
             <KeyPad
-                refreshState={refreshState}
+                refreshState={handleHintRequest}
                 bigNums={numbers.bigNums}
                 smallNums={numbers.smallNums}
                 target={numbers.target}

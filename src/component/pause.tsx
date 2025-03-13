@@ -1,4 +1,5 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPause } from "@fortawesome/free-solid-svg-icons";
 
 interface PauseProps {
@@ -7,8 +8,12 @@ interface PauseProps {
 
 export const Pause: React.FC<PauseProps> = ({ onPlayerClick }) => {
     return (
-        <div onClick={onPlayerClick} className="clickable">
+        <button 
+            className="pause-button"
+            onClick={onPlayerClick}
+            aria-label="Pause game"
+        >
             <FontAwesomeIcon icon={faPause} />
-        </div>
+        </button>
     );
 };

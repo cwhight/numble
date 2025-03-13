@@ -1,6 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react';
-import { faChartBar, faCircleQuestion, faInfo } from "@fortawesome/free-solid-svg-icons";
+import React, { useState } from 'react';
+import { 
+    faChartBar, 
+    faLightbulb, 
+    faInfo, 
+    faBars,
+    faXmark
+} from "@fortawesome/free-solid-svg-icons";
 
 interface HeaderProps {
     showScores: () => void;
@@ -9,23 +15,56 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ showScores, showRules, showHints }) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+    };
+
+    const handleMenuClick = (action: () => void) => {
+        action();
+        setIsMenuOpen(false);
+    };
+
     return (
-        <div className={`header mb-3`}>
-            <div className={"w-90 d-flex justify-content-between align-items-center"}>
-                <h2 className={"header-content header-links mb-0"} onClick={showScores}>
-                    <FontAwesomeIcon icon={faChartBar} />
-                </h2>
-                <h1 className={"header-content mb-0 page-title"}>Numble</h1>
-                <div className={"d-flex align-items-end"}>
-                    <h2 className={"header-content header-links mx-3 mb-0"} onClick={showRules}>
-                        <FontAwesomeIcon className={"header-links"} icon={faInfo} />
-                    </h2>
-                    <h2 className={"header-content header-links mb-0"} onClick={showHints}>
-                        <FontAwesomeIcon className={"header-links"} icon={faCircleQuestion} />
-                    </h2>
+        <header className="header">
+            <div className="burger-menu">
+                <button 
+                    className="burger-button"
+                    onClick={toggleMenu}
+                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                >
+                    <FontAwesomeIcon icon={isMenuOpen ? faXmark : faBars} />
+                </button>
+                
+                <div className={`menu-dropdown ${isMenuOpen ? 'show' : ''}`}>
+                    <button 
+                        className="menu-item"
+                        onClick={() => handleMenuClick(showScores)}
+                        aria-label="Show scores"
+                    >
+                        <FontAwesomeIcon icon={faChartBar} />
+                        Statistics
+                    </button>
+                    <button 
+                        className="menu-item"
+                        onClick={() => handleMenuClick(showRules)}
+                        aria-label="Show rules"
+                    >
+                        <FontAwesomeIcon icon={faInfo} />
+                        Rules
+                    </button>
+                    <button 
+                        className="menu-item"
+                        onClick={() => handleMenuClick(showHints)}
+                        aria-label="Show hints"
+                    >
+                        <FontAwesomeIcon icon={faLightbulb} />
+                        Hint
+                    </button>
                 </div>
             </div>
-        </div>
+        </header>
     );
 };
 

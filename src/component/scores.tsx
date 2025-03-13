@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Score } from "./keypad";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 export interface ScoresModalProps {
     show: boolean;
@@ -8,10 +10,6 @@ export interface ScoresModalProps {
 }
 
 export const ScoresModal: React.FC<ScoresModalProps> = ({ show, close, scores }) => {
-    const reset = () => {
-        close();
-    };
-
     const todaysScore = useMemo(() => 
         parseInt(localStorage.getItem("todaysTime") || "0"), 
         []
@@ -25,14 +23,18 @@ export const ScoresModal: React.FC<ScoresModalProps> = ({ show, close, scores })
     const maxStreak = localStorage.getItem("maxStreak") || "0";
 
     const [showCopyMsg, setShowCopyMsg] = useState(false);
-    const [msg, setMsg] = useState("");
+
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.target === e.currentTarget) {
+            close();
+        }
+    };
 
     const copyToClipboard = async () => {
         const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
 ${todaysScore !== 0 ? `Today's Time: 🎉 ${timeMessage} 🎉` : ""}
 https://www.numble-game.co.uk`;
 
-        setMsg("Copied to clipboard!");
         setShowCopyMsg(true);
         setTimeout(() => setShowCopyMsg(false), 2000);
 
@@ -43,40 +45,75 @@ https://www.numble-game.co.uk`;
         }
     };
 
-    const copyMessage = showCopyMsg ? <span>{msg}</span> : null;
-
-    const buttons = (
-        <div className={"w-100 mt-3 d-flex flex-column"}>
-            <div className={"d-flex justify-content-around w-100"}>
-                <button onClick={reset} className={"mr-3 btn btn-tertiary"}>Close</button>
-                <button onClick={copyToClipboard} className={"btn btn-primary"}>Share</button>
-            </div>
-            <div>{copyMessage}</div>
-        </div>
-    );
-
     const className = show ? "modal-cont display-block" : "modal-cont display-none";
 
     return (
-        <div className={className}>
-            <div className={"p-3 modal-main-cont d-flex flex-column justify-content-around"}>
-                <h2 className={"text-center"}>Welcome to Numble</h2>
-                <p className={"text-center"}>A daily number puzzle</p>
-                {todaysScore !== 0 && (
-                    <h4><em>Today's Time:</em> {todaysScore + " Seconds"}</h4>
+        <div className={className} onClick={handleBackdropClick}>
+            <div className="modal-main-cont">
+                <div className="modal-header">
+                    <button className="modal-close-button" onClick={close}>
+                        <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                    <h2>Statistics</h2>
+                </div>
+
+                <div className="modal-content">
+                    {todaysScore !== 0 && (
+                        <div className="time-display">
+                            {timeMessage}
+                        </div>
+                    )}
+
+                    <div className="streak-container">
+                        <div className="streak-box">
+                            <div className="streak-value">{streak}</div>
+                            <div className="streak-label">Current Streak</div>
+                        </div>
+                        <div className="streak-box">
+                            <div className="streak-value">{maxStreak}</div>
+                            <div className="streak-label">Max Streak</div>
+                        </div>
+                    </div>
+
+                    <div className="modal-stats">
+                        <div className="stat-box">
+                            <div className="stat-label">Games Played</div>
+                            <div className="stat-value">{scores.gamesPlayed}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Games Won</div>
+                            <div className="stat-value">{scores.gamesWon}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Average Time</div>
+                            <div className="stat-value">
+                                {scores.gamesWon > 0 ? Math.round(scores.averageTime) + "s" : "N/A"}
+                            </div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Best Time</div>
+                            <div className="stat-value">
+                                {scores.gamesWon > 0 ? scores.bestTime + "s" : "N/A"}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="modal-footer">
+                    <button className="modal-button primary" onClick={copyToClipboard}>
+                        <FontAwesomeIcon icon={faShare} /> Share
+                    </button>
+                </div>
+
+                {showCopyMsg && (
+                    <div className="copy-message">
+                        Copied to clipboard!
+                    </div>
                 )}
 
-                <h4 className={"text-left"}><em>Games played:</em> {scores.gamesPlayed}</h4>
-                <h4 className={"text-left"}><em>Games won:</em> {scores.gamesWon}</h4>
-                <h4 className={"text-left"}><em>Average Time:</em> {scores.gamesWon > 0 ? Math.round(scores.averageTime) + " Seconds" : "N/A"}</h4>
-                <h4 className={"text-left"}><em>Best Score:</em> {scores.gamesWon > 0 ? scores.bestTime + " Seconds" : "N/A"}</h4>
-                <h4 className={"text-left"}><em>Streak:</em> {streak}</h4>
-                <h4 className={"text-left"}><em>Max Streak:</em> {maxStreak}</h4>
-                {buttons}
-
-                <span className={"mt-3"}>
-                    Enjoying Numble? Why not try our sister game <a href={"https://www.jumble-game.co.uk"}>Jumble</a>
-                </span>
+                <div className="modal-footer-text">
+                    Enjoying Numble? Try our sister game <a href="https://www.jumble-game.co.uk">Jumble</a>
+                </div>
             </div>
         </div>
     );

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Score } from "./keypad";
-import { exportAsImage } from "../utils/exportImage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faShare, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 export interface FinishedModalProps {
     timeTaken: number;
@@ -25,21 +25,29 @@ export const FinishedModal: React.FC<FinishedModalProps> = ({
 }) => {
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
-    const hintsUsed = parseInt(localStorage.getItem("hintsUsed") || "0");
+    const hintsUsedToday = parseInt(localStorage.getItem("hintsUsed") || "0");
 
-    const reset = () => {
-        clear();
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.target === e.currentTarget) {
+            clear();
+        }
     };
 
-    const minutes = Math.floor(timeTaken / 60);
-    const seconds = timeTaken % 60;
-    const timeMessage = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    };
+
+    const getShareText = () => {
+        return `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
+${success ? `Time: 🎉 ${formatTime(timeTaken)} 🎉
+Hints Used: ${hintsUsedToday} 🤔` : ""}
+https://www.numble-game.co.uk`;
+    };
 
     const copyToClipboard = async () => {
-        const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
-${success ? `Time: 🎉 ${timeMessage} 🎉
-Hints Used: ${hintsUsed} 🤔` : ""}
-https://www.numble-game.co.uk`;
+        const shareString = getShareText();
 
         setMsg("Copied to clipboard!");
         setShowCopyMsg(true);
@@ -52,37 +60,40 @@ https://www.numble-game.co.uk`;
         }
     };
 
-    const exportScore = async () => {
-        const element = document.getElementById('score-display');
-        if (element) {
-            await exportAsImage(element, {
-                filename: 'numble-score',
-                backgroundColor: '#ffffff',
-                scale: 2
-            });
-        }
+    const shareToWhatsApp = () => {
+        const shareString = encodeURIComponent(getShareText());
+        window.open(`https://wa.me/?text=${shareString}`, '_blank');
     };
 
     const className = show ? "modal-cont display-block" : "modal-cont display-none";
 
     return (
-        <div className={className}>
+        <div className={className} onClick={handleBackdropClick}>
             <div id="score-display" className="modal-main-cont">
                 <div className="modal-header">
+                    <button className="modal-close-button" onClick={clear}>
+                        <FontAwesomeIcon icon={faTimes} />
+                    </button>
                     {success && (
-                        <div className="success-icon">
+                        <div className="success-icon small">
                             <FontAwesomeIcon icon={faCheck} />
                         </div>
                     )}
-                    <h2>{success ? "Great Work!" : "Time's Up!"}</h2>
-                    {success && (
-                        <div className="time-display">
-                            {timeMessage}
-                        </div>
-                    )}
+                    <h4 className="modal-title">{success ? "Great Work!" : "Time's Up!"}</h4>
                 </div>
 
                 <div className="modal-content">
+                    {success && (
+                        <div className="todays-score">
+                            <div className="time-display highlight">
+                                {formatTime(timeTaken)}
+                            </div>
+                            <div className="hints-used">
+                                Hints Used Today: {hintsUsedToday}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="streak-container">
                         <div className="streak-box">
                             <div className="streak-value">{currentStreak}</div>
@@ -95,39 +106,29 @@ https://www.numble-game.co.uk`;
                     </div>
 
                     <div className="modal-stats">
-                        <div className="stat-box">
-                            <div className="stat-label">Time</div>
-                            <div className="stat-value">{timeMessage}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-label">Hints Used</div>
-                            <div className="stat-value">{hintsUsed}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-label">Games Played</div>
-                            <div className="stat-value">{score.gamesPlayed}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-label">Games Won</div>
-                            <div className="stat-value">{score.gamesWon}</div>
+                        <div className="stat-box historic">
+                            <div className="stat-label">All Time Stats</div>
+                            <div className="stat-value">
+                                <p>Games Won: {score.gamesWon}</p>
+                                <p>Games Played: {score.gamesPlayed}</p>
+                                <p>Average Time: {formatTime(Math.floor(score.averageTime))}</p>
+                                <p>Best Time: {formatTime(score.bestTime)}</p>
+                                <p>Total Hints Used: {score.hintsUsed || 0}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="modal-footer">
-                    {success ? (
-                        <>
+                    {success && (
+                        <div className="share-buttons">
                             <button className="modal-button primary" onClick={copyToClipboard}>
-                                <FontAwesomeIcon icon={faShare} /> Share
+                                <FontAwesomeIcon icon={faShare} /> Copy
                             </button>
-                            <button className="modal-button secondary" onClick={exportScore}>
-                                <FontAwesomeIcon icon={faDownload} /> Export
+                            <button className="modal-button whatsapp" onClick={shareToWhatsApp}>
+                                <FontAwesomeIcon icon={faWhatsapp} /> Share
                             </button>
-                        </>
-                    ) : (
-                        <button className="modal-button primary" onClick={reset}>
-                            Try Again
-                        </button>
+                        </div>
                     )}
                 </div>
 

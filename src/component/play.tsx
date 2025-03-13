@@ -1,4 +1,5 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
 interface PlayProps {
@@ -7,8 +8,12 @@ interface PlayProps {
 
 export const Play: React.FC<PlayProps> = ({ onPlayerClick }) => {
     return (
-        <div onClick={onPlayerClick} className="clickable">
+        <button 
+            className="play-button"
+            onClick={onPlayerClick}
+            aria-label="Start game"
+        >
             <FontAwesomeIcon icon={faPlay} />
-        </div>
+        </button>
     );
 }; 
