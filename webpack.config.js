@@ -1,19 +1,19 @@
 const path = require("path");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     entry: "./src/index.tsx",
-    output: { path: path.join(__dirname, "build"), filename: "bundle.js", publicPath: ""},
+    output: { path: path.join(__dirname, "build"), filename: "bundle.js", publicPath: "/"},
     mode: process.env.NODE_ENV || "development",
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
     },
     devServer: {
         static: path.resolve(__dirname, 'dist'),
-        port: process.env.PORT || 3000,
+        port: 3001,
         open: true,
+        hot: true,
         historyApiFallback: true,
         allowedHosts: ["localhost", "127.0.0.1"]
     },
@@ -30,15 +30,12 @@ module.exports = {
                 use: ["ts-loader"],
             },
             {
+                test: /\.css$/,
+                use: ["style-loader", "css-loader"],
+            },
+            {
                 test: /\.s[ac]ss$/i,
-                use: [
-                    // Creates `style` nodes from JS strings
-                    "style-loader",
-                    // Translates CSS into CommonJS
-                    "css-loader",
-                    // Compiles Sass to CSS
-                    "sass-loader",
-                ],
+                use: ["style-loader", "css-loader", "sass-loader"],
             },
             {
                 test: /\.(jpg|jpeg|png|gif|mp3|svg)$/,
@@ -48,7 +45,6 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin(),
-        new MiniCssExtractPlugin(),
         new HtmlWebpackPlugin({
             template: 'src/index.ejs',
             templateParameters: {

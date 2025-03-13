@@ -1,76 +1,149 @@
-import React, {useState} from "react";
-import {Button} from "react-bootstrap";
-import {score} from "./keypad";
-import {exportComponentAsJPEG} from "react-component-export-image";
+import React, { useState } from "react";
+import { Score } from "./keypad";
+import { exportAsImage } from "../utils/exportImage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faShare, faDownload } from "@fortawesome/free-solid-svg-icons";
 
 export interface FinishedModalProps {
-    timeTaken: number
-    score: score
-    clear: any
-    success: boolean
-    show: boolean
-    timerRef: any
-    currentStreak: number
-    maxStreak: number
+    timeTaken: number;
+    score: Score;
+    clear: () => void;
+    success: boolean;
+    show: boolean;
+    currentStreak: number;
+    maxStreak: number;
 }
 
-export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModalProps) => {
-    const {success, clear, score, timeTaken, timerRef, currentStreak, maxStreak} = props
-    let show = props.show
-    const reset = () => {
-        clear()
-        show = false
-    }
-
+export const FinishedModal: React.FC<FinishedModalProps> = ({
+    success,
+    clear,
+    score,
+    timeTaken,
+    currentStreak,
+    maxStreak,
+    show
+}) => {
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
-    let minutes = Math.floor(timeTaken / 60)
-    let seconds = timeTaken % 60
-    let timeMessage = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`
-    async function copyToClipboard() {
+    const hintsUsed = parseInt(localStorage.getItem("hintsUsed") || "0");
 
+    const reset = () => {
+        clear();
+    };
+
+    const minutes = Math.floor(timeTaken / 60);
+    const seconds = timeTaken % 60;
+    const timeMessage = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+
+    const copyToClipboard = async () => {
         const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
-${success ? `Today's Time: 🎉 ${timeMessage} 🎉` : ""}
+${success ? `Time: 🎉 ${timeMessage} 🎉
+Hints Used: ${hintsUsed} 🤔` : ""}
 https://www.numble-game.co.uk`;
 
         setMsg("Copied to clipboard!");
         setShowCopyMsg(true);
         setTimeout(() => setShowCopyMsg(false), 2000);
+
         if ("clipboard" in navigator) {
-            return await navigator.clipboard.writeText(shareString);
+            await navigator.clipboard.writeText(shareString);
         } else {
-            return document.execCommand("copy", true, shareString);
+            document.execCommand("copy", true, shareString);
         }
-    }
+    };
 
-    const message = success ? `Great Work - you solved it in ${timeTaken} seconds` : "Unlucky this time"
+    const exportScore = async () => {
+        const element = document.getElementById('score-display');
+        if (element) {
+            await exportAsImage(element, {
+                filename: 'numble-score',
+                backgroundColor: '#ffffff',
+                scale: 2
+            });
+        }
+    };
 
-    const copyMessage = showCopyMsg ? <span>{msg}</span> : null
+    const className = show ? "modal-cont display-block" : "modal-cont display-none";
 
-    const buttons = success ?
-        <div className={"mt-3"}>
-            <Button onClick={() => copyToClipboard()} className={"w-100 btn"}>Share</Button>
-            <div>{copyMessage}</div>
+    return (
+        <div className={className}>
+            <div id="score-display" className="modal-main-cont">
+                <div className="modal-header">
+                    {success && (
+                        <div className="success-icon">
+                            <FontAwesomeIcon icon={faCheck} />
+                        </div>
+                    )}
+                    <h2>{success ? "Great Work!" : "Time's Up!"}</h2>
+                    {success && (
+                        <div className="time-display">
+                            {timeMessage}
+                        </div>
+                    )}
+                </div>
+
+                <div className="modal-content">
+                    <div className="streak-container">
+                        <div className="streak-box">
+                            <div className="streak-value">{currentStreak}</div>
+                            <div className="streak-label">Current Streak</div>
+                        </div>
+                        <div className="streak-box">
+                            <div className="streak-value">{maxStreak}</div>
+                            <div className="streak-label">Max Streak</div>
+                        </div>
+                    </div>
+
+                    <div className="modal-stats">
+                        <div className="stat-box">
+                            <div className="stat-label">Time</div>
+                            <div className="stat-value">{timeMessage}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Hints Used</div>
+                            <div className="stat-value">{hintsUsed}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Games Played</div>
+                            <div className="stat-value">{score.gamesPlayed}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Games Won</div>
+                            <div className="stat-value">{score.gamesWon}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="modal-footer">
+                    {success ? (
+                        <>
+                            <button className="modal-button primary" onClick={copyToClipboard}>
+                                <FontAwesomeIcon icon={faShare} /> Share
+                            </button>
+                            <button className="modal-button secondary" onClick={exportScore}>
+                                <FontAwesomeIcon icon={faDownload} /> Export
+                            </button>
+                        </>
+                    ) : (
+                        <button className="modal-button primary" onClick={reset}>
+                            Try Again
+                        </button>
+                    )}
+                </div>
+
+                {showCopyMsg && (
+                    <div className="copy-message">
+                        {msg}
+                    </div>
+                )}
+
+                <div className="modal-footer-text">
+                    Enjoying Numble? Try our sister game{" "}
+                    <a href="https://www.jumble-game.co.uk" target="_blank" rel="noopener noreferrer">
+                        Jumble
+                    </a>
+                </div>
+            </div>
         </div>
-        : <div className={"mt-3"}>
-            <Button onClick={reset} className={"btn"}>Try Again</Button>
-        </div>
-
-    const className = show ? "modal-cont display-block" : "modal-cont display-none"
-
-    return <div className={className}>
-        <div className={"p-3 modal-main-cont d-flex flex-column justify-content-around"}>
-
-            <h2 className={"text-center"}>{message}</h2>
-            <h4><em>Games played:</em> {score.gamesPlayed}</h4>
-            <h4><em>Games won:</em> {score.gamesWon}</h4>
-            <h4><em>Average Time:</em> {score.gamesWon > 0 ? Math.round(score.averageTime) + " Seconds" : "N/A"}</h4>
-            <h4><em>Best Score:</em> {score.gamesWon > 0 ? score.bestTime + " Seconds" : "N/A"}</h4>
-            <h4><em>Streak:</em> {currentStreak}</h4>
-            <h4><em>Max Streak:</em> {maxStreak}</h4>
-            {buttons}
-
-            <span className={"mt-3"}>Enjoying Numble? Why not try our sister game <a href={"https://www.jumble-game.co.uk"}>Jumble</a></span>
-        </div>
-    </div>
-}
+    );
+};

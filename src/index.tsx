@@ -1,14 +1,18 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {App} from './App';
-import configureStore from "./redux/store";
-import { Provider } from "react-redux";
+import { createRoot } from 'react-dom/client';
+import { Home } from './page/home';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
+import './styles.css';
 
-ReactDOM.render(
-      <Provider store={configureStore()}>
-          <App />
-      </Provider>,
-  document.getElementById('root')
+const container = document.getElementById('root');
+if (!container) throw new Error('Failed to find the root element');
+const root = createRoot(container);
+
+root.render(
+    <React.StrictMode>
+        <Home />
+    </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

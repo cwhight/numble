@@ -1,13 +1,14 @@
-import React from 'react'
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPause} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPause } from "@fortawesome/free-solid-svg-icons";
 
-const Pause = ({onPlayerClick} : any) => {
-    return (
-        <div className="d-flex justify-content-around play" onClick={onPlayerClick}>
-            <FontAwesomeIcon icon={faPause} />
-        </div>
-    )
+interface PauseProps {
+    onPlayerClick: () => void;
 }
 
-export default Pause
+export const Pause: React.FC<PauseProps> = ({ onPlayerClick }) => {
+    return (
+        <div onClick={onPlayerClick} className="clickable">
+            <FontAwesomeIcon icon={faPause} />
+        </div>
+    );
+};
