@@ -19,6 +19,7 @@ import {
 import { Pause } from "./pause";
 import { Play } from "./play";
 import { getHint } from '../utils/solver';
+import Confetti from 'react-confetti';
 
 const TRACKING_ID = "UA-221463714-1";
 ReactGA.initialize(TRACKING_ID);
@@ -140,6 +141,8 @@ export const KeyPad: React.FC<KeyPadProps> = ({
     const [isModalOpen, setIsModalOpen] = useState<boolean>(() => {
         return localStorage.getItem("finished") === "true";
     });
+
+    const [showConfetti, setShowConfetti] = useState(false);
 
     const cacheNewNumbers = (numbers: number[]) => {
         setNewNumbers(numbers);
@@ -304,6 +307,13 @@ export const KeyPad: React.FC<KeyPadProps> = ({
             finished: true
         });
         setIsPlaying(false);
+
+        // Show confetti
+        setShowConfetti(true);
+        setTimeout(() => {
+            setShowConfetti(false);
+            setIsModalOpen(true);
+        }, 3000); // Show confetti for 3 seconds
     };
 
     const saveScore = (success: boolean, timeTaken: number) => {
@@ -679,6 +689,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
 
     return (
         <div className="game-container">
+            {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
             {form}
             
             <FinishedModal
