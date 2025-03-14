@@ -13,7 +13,7 @@ interface Numbers extends GameNumbers {
 }
 
 export const Home: React.FC = () => {
-    const cookieName = "numbleId";
+    const cookieName = "sumbleId";
     // Set cookie if it doesn't exist
     if (!Cookies.get(cookieName)) {
         Cookies.set(cookieName, uuidv4());

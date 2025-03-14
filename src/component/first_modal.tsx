@@ -23,7 +23,7 @@ export const FirstModal: React.FC<FirstModalProps> = ({ show, close }) => {
                     <button className="modal-close-button" onClick={close}>
                         <FontAwesomeIcon icon={faTimes} />
                     </button>
-                    <h2>Welcome to Numble!</h2>
+                    <h2>Welcome to Sumble!</h2>
                     <p className="modal-subtitle">A daily number puzzle</p>
                 </div>
 

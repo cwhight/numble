@@ -1,5 +1,5 @@
-## Numble
+## Sumble
 
-[Play Numble](https://www.numble-game.co.uk)
+[Play Sumble](https://sumble.onrender.com)
 
-[https://www.numble-game.co.uk](https://www.numble-game.co.uk)
+[https://sumble.onrender.com](https://sumble.onrender.com)
