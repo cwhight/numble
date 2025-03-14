@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {Score} from "./keypad";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faShare, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faTimes, faCopy} from "@fortawesome/free-solid-svg-icons";
 import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 
 export interface FinishedModalProps {
@@ -40,8 +40,9 @@ export const FinishedModal: React.FC<FinishedModalProps> = ({
     };
 
     const getShareText = () => {
+        const formattedTime = formatTime(timeTaken);
         return `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
-${success ? `Time: 🎉 ${formatTime(timeTaken)} 🎉
+${success ? `Time: 🎉 ${formattedTime} 🎉
 Hints Used: ${hintsUsedToday} 🤔` : ""}
 https://www.numble-game.co.uk`;
     };
@@ -100,26 +101,36 @@ https://www.numble-game.co.uk`;
                     </div>
 
                     <div className="modal-stats">
-                        <div className="stat-box historic">
-                            <div className="stat-label">All Time Stats</div>
-                            <div className="stat-value">
-                                <p>Games Won: {score.gamesWon}</p>
-                                <p>Games Played: {score.gamesPlayed}</p>
-                                <p>Average Time: {formatTime(Math.floor(score.averageTime))}</p>
-                                <p>Best Time: {formatTime(score.bestTime)}</p>
-                                <p>Total Hints Used: {score.hintsUsed || 0}</p>
-                            </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Games Won</div>
+                            <div className="stat-value">{score.gamesWon}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Games Played</div>
+                            <div className="stat-value">{score.gamesPlayed}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Average Time</div>
+                            <div className="stat-value">{formatTime(Math.floor(score.averageTime))}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Best Time</div>
+                            <div className="stat-value">{formatTime(score.bestTime)}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Total Hints Used</div>
+                            <div className="stat-value">{score.hintsUsed || 0}</div>
                         </div>
                     </div>
                 </div>
 
                 <div className="modal-footer">
-                    <div className="share-buttons">
-                        <button className="modal-button primary" onClick={copyToClipboard}>
-                            <FontAwesomeIcon icon={faShare} /> Copy
+                    <div className="share-buttons" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '10px', width: '100%' }}>
+                        <button className="modal-button primary" style={{ padding: '5px', width: '45%' }} onClick={copyToClipboard}>
+                            <FontAwesomeIcon icon={faCopy} />
                         </button>
-                        <button className="modal-button whatsapp" onClick={shareToWhatsApp}>
-                            <FontAwesomeIcon icon={faWhatsapp} /> Share
+                        <button className="modal-button whatsapp" style={{ padding: '5px', width: '45%' }} onClick={shareToWhatsApp}>
+                            <FontAwesomeIcon icon={faWhatsapp} />
                         </button>
                     </div>
                 </div>

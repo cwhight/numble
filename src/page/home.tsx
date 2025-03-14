@@ -4,7 +4,7 @@ import { KeyPad, Score } from "../component/keypad";
 import { v4 as uuidv4 } from 'uuid';
 import Header from "../component/header";
 import { FirstModal } from "../component/first_modal";
-import { ScoresModal } from "../component/scores";
+import { FinishedModal } from "../component/finished_modal";
 import { HintsModal } from "../component/hints_modal";
 import { generateNumbers, GameNumbers } from "../utils/generateNumbers";
 
@@ -30,9 +30,15 @@ export const Home: React.FC = () => {
         };
     });
     const [showModal, setShowModal] = useState<boolean>(scores.gamesPlayed === 0);
-    const [showScoresModal, setShowScoresModal] = useState<boolean>(false);
+    const [showStatsModal, setShowStatsModal] = useState<boolean>(false);
     const [showHintsModal, setShowHintsModal] = useState<boolean>(false);
     const [refresh, setRefresh] = useState<boolean>(false);
+    const [currentStreak] = useState<number>(() => 
+        parseInt(localStorage.getItem("currentStreak") || "0")
+    );
+    const [maxStreak] = useState<number>(() => 
+        parseInt(localStorage.getItem("maxStreak") || "0")
+    );
 
     useEffect(() => {
         // Check if we need to generate new numbers (day changed)
@@ -50,7 +56,7 @@ export const Home: React.FC = () => {
     }, []);
 
     const toggleModal = () => setShowModal(prev => !prev);
-    const toggleScoresModal = () => setShowScoresModal(prev => !prev);
+    const toggleStatsModal = () => setShowStatsModal(prev => !prev);
     
     const handleHintRequest = () => {
         refreshState();
@@ -61,7 +67,7 @@ export const Home: React.FC = () => {
     return (
         <div>
             <Header 
-                showScores={toggleScoresModal} 
+                showScores={toggleStatsModal} 
                 showHints={() => setShowHintsModal(true)} 
                 showRules={toggleModal}
             />
@@ -69,10 +75,14 @@ export const Home: React.FC = () => {
                 close={() => setShowModal(false)} 
                 show={showModal} 
             />
-            <ScoresModal 
-                scores={scores} 
-                close={() => setShowScoresModal(false)} 
-                show={showScoresModal} 
+            <FinishedModal 
+                show={showStatsModal}
+                clear={() => setShowStatsModal(false)}
+                timeTaken={parseInt(localStorage.getItem("todaysTime") || "0")}
+                score={scores}
+                success={localStorage.getItem("finished") === "true"}
+                currentStreak={currentStreak}
+                maxStreak={maxStreak}
             />
             <HintsModal 
                 refresh={refresh} 

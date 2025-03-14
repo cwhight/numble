@@ -29,7 +29,6 @@ function isNumber(item: string): boolean {
 
 interface Finished {
     finished: boolean;
-    success: boolean;
 }
 
 export interface Score {
@@ -94,10 +93,8 @@ export const KeyPad: React.FC<KeyPadProps> = ({
 
     const [finished, setIsFinished] = useState<Finished>(() => {
         const finished = localStorage.getItem("finished") === "true";
-        const solved = localStorage.getItem("solved") === "true";
         return {
-            finished,
-            success: solved
+            finished
         };
     });
 
@@ -131,7 +128,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
     const lastWon = parseInt(localStorage.getItem("lastWon") || "0");
     const today = new Date().setHours(0, 0, 0, 0);
     const yesterday = today - 86400000;
-    const lastPlayedInt = parseInt(lastPlayed || "0");
+    const lastPlayedInt = lastPlayed ? parseInt(lastPlayed) : 0;
 
     const [showingHint, setShowingHint] = useState<boolean>(false);
     const [hintNumbers, setHintNumbers] = useState<[number, number] | null>(null);
@@ -139,6 +136,10 @@ export const KeyPad: React.FC<KeyPadProps> = ({
     const [hintMessage, setHintMessage] = useState<string>("");
 
     const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
+
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(() => {
+        return localStorage.getItem("finished") === "true";
+    });
 
     const cacheNewNumbers = (numbers: number[]) => {
         setNewNumbers(numbers);
@@ -172,13 +173,10 @@ export const KeyPad: React.FC<KeyPadProps> = ({
         cacheNewNumbers([]);
         cacheUsedKeys([]);
         setIsFinished({
-            finished: false,
-            success: false
+            finished: false
         });
         localStorage.setItem("finished", "false");
         localStorage.setItem("displayedHints", JSON.stringify([]));
-        setElapsedTime(0);
-        localStorage.setItem("elapsedTime", "0");
     };
 
     useEffect(() => {
@@ -187,10 +185,9 @@ export const KeyPad: React.FC<KeyPadProps> = ({
             cacheUsedKeys([])
             setTypedKeys([])
             setIsFinished({
-                finished: false,
-                success: false
+                finished: false
             })
-            localStorage.setItem("todaysTime", "0")
+
             setElapsedTime(0)
             localStorage.setItem("elapsedTime", "0")
             setHasBeenResetToday(true)
@@ -208,18 +205,17 @@ export const KeyPad: React.FC<KeyPadProps> = ({
     }, [hasPlayedToday, lastPlayedInt, today])
 
     useEffect(() => {
-        if (!hasPlayedToday && finished.success) {
+        if (!hasPlayedToday && localStorage.getItem("finished") === "true") {
             setIsFinished({
-                finished: false,
-                success: false
+                finished: true
             })
             localStorage.setItem("todaysTime", "0")
         }
-    }, [hasPlayedToday, finished.success])
+    }, [hasPlayedToday])
 
     useEffect(() => {
         // Only start timer if game hasn't been won
-        if (isPlaying && !finished.success && localStorage.getItem("finished") !== "true") {
+        if (isPlaying && localStorage.getItem("finished") !== "true") {
             const interval = setInterval(() => {
                 setElapsedTime(prev => prev + 1);
             }, 1000);
@@ -233,13 +229,22 @@ export const KeyPad: React.FC<KeyPadProps> = ({
                 clearInterval(timerInterval);
             }
         };
-    }, [isPlaying, finished.success]);
+    }, [isPlaying]);
 
     useEffect(() => {
-        // Only update elapsed time in storage if game hasn't been won
-        if (localStorage.getItem("finished") !== "true") {
-            localStorage.setItem("elapsedTime", elapsedTime.toString());
+        // Initialize elapsedTime and todaysTime from local storage
+        const storedElapsedTime = localStorage.getItem("elapsedTime");
+        const storedTodaysTime = localStorage.getItem("todaysTime");
+        if (storedTodaysTime && localStorage.getItem("finished") === "true") {
+            setElapsedTime(parseInt(storedTodaysTime));
+        } else if (storedElapsedTime) {
+            setElapsedTime(parseInt(storedElapsedTime));
         }
+    }, []);
+
+    useEffect(() => {
+        // Update elapsedTime in storage whenever it changes
+        localStorage.setItem("elapsedTime", elapsedTime.toString());
     }, [elapsedTime]);
 
     const big1 = bigNums[0]
@@ -265,7 +270,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
         return `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
     };
 
-    const gameOver = (success: boolean) => {
+    const gameOver = () => {
         ReactGA.event({
             category: 'Game',
             action: 'Won',
@@ -273,7 +278,8 @@ export const KeyPad: React.FC<KeyPadProps> = ({
         });
 
         localStorage.setItem("todaysTime", elapsedTime.toString());
-        saveScore(success, elapsedTime);
+        localStorage.setItem("winningTime", elapsedTime.toString());
+        saveScore(true, elapsedTime);
         const hintsUsed = parseInt(localStorage.getItem("hintsUsed") || "0");
         let newStreak: number;
         if (hintsUsed > 0) {
@@ -295,8 +301,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
 
         localStorage.setItem("finished", "true");
         setIsFinished({
-            finished: true,
-            success: true
+            finished: true
         });
         setIsPlaying(false);
     };
@@ -328,7 +333,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
 
     const handleClick = (value: string, key?: number) => {
         // Prevent any moves if game is finished
-        if (finished.success || localStorage.getItem("finished") === "true") {
+        if (finished.finished || localStorage.getItem("finished") === "true") {
             return;
         }
 
@@ -434,7 +439,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
 
         if (newTotals.equals) {
             if (newTotals.total == target) {
-                gameOver(true)
+                gameOver()
                 return
             }
 
@@ -456,7 +461,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
 
     const showHint = () => {
         // Prevent hints if game is finished
-        if (!isPlaying || finished.success || localStorage.getItem("finished") === "true") return;
+        if (!isPlaying || finished.finished || localStorage.getItem("finished") === "true") return;
 
         // Increment hints used counter
         const currentHintsUsed = parseInt(localStorage.getItem("hintsUsed") || "0");
@@ -542,7 +547,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
     };
 
     let newNums = newNumbers.map((num, i) => {
-        return <Number solved={finished.success} newNum={true} big={false} isPlaying={isPlaying}
+        return <Number solved={finished.finished} newNum={true} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                        onClick={() => handleClick(num.toString(), 7 + i)} value={num}
                        used={usedKeys.includes(7 + i)}
                        highlighted={isNumberHinted(num)}/>
@@ -552,46 +557,34 @@ export const KeyPad: React.FC<KeyPadProps> = ({
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <div>
-                <FinishedModal 
-                    currentStreak={currentStreak} 
-                    maxStreak={maxStreak}
-                    timeTaken={elapsedTime} 
-                    score={scores}
-                    clear={clear} 
-                    show={finished.finished} 
-                    success={finished.success}
-                />
-
                 <div ref={timerRef} className={`timer-wrapper mb-3`}>
                     <div className="timer-circle">
                         <div className="timer-content">
                             <div className="timer-display">
-                                {formatTime(elapsedTime)}
+                                {formatTime(localStorage.getItem("winningTime") ? parseInt(localStorage.getItem("winningTime")!) : elapsedTime)}
                             </div>
                             <div>
-                                {isPlaying && !finished.success && localStorage.getItem("finished") !== "true" ? (
+                                {isPlaying && localStorage.getItem("finished") !== "true" ? (
                                     <Pause onPlayerClick={() => {
                                         setIsPlaying(false);
                                         cacheTimeRemaining(elapsedTime);
                                         setElapsedTime(elapsedTime);
                                     }}/>
-                                ) : (
+                                ) : localStorage.getItem("finished") !== "true" ? (
                                     <Play onPlayerClick={() => {
                                         if (localStorage.getItem("finished") !== "true") {
                                             setIsPlaying(true);
                                         }
                                     }}/>
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div>
-
                 <div className={"p-3 text-center my-1 mx-2"}>
-                    <h1 className={"target"}>{isPlaying || finished.success ? target :
-                        <FontAwesomeIcon icon={faQuestion}/>}</h1>
+                    <h1 className={"target"}>{isPlaying || finished.finished ? target : <FontAwesomeIcon icon={faQuestion}/>}</h1>
                 </div>
             </div>
             <div className="game-board">
@@ -607,27 +600,27 @@ export const KeyPad: React.FC<KeyPadProps> = ({
                     {newNums}
                 </div>
                 <div className="number-container">
-                    <Number solved={finished.success} newNum={false} big={true} isPlaying={isPlaying}
+                    <Number solved={finished.finished} newNum={false} big={true} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                             onClick={() => handleClick(big1.toString(), 1)} value={big1}
                             used={usedKeys.includes(1)}
                             highlighted={isNumberHinted(big1)}/>
-                    <Number solved={finished.success} newNum={false} big={true} isPlaying={isPlaying}
+                    <Number solved={finished.finished} newNum={false} big={true} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                             onClick={() => handleClick(big2.toString(), 2)} value={big2}
                             used={usedKeys.includes(2)}
                             highlighted={isNumberHinted(big2)}/>
-                    <Number solved={finished.success} newNum={false} big={false} isPlaying={isPlaying}
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                             onClick={() => handleClick(small1.toString(), 3)} value={small1}
                             used={usedKeys.includes(3)}
                             highlighted={isNumberHinted(small1)}/>
-                    <Number solved={finished.success} newNum={false} big={false} isPlaying={isPlaying}
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                             onClick={() => handleClick(small2.toString(), 4)} value={small2}
                             used={usedKeys.includes(4)}
                             highlighted={isNumberHinted(small2)}/>
-                    <Number solved={finished.success} newNum={false} big={false} isPlaying={isPlaying}
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                             onClick={() => handleClick(small3.toString(), 5)} value={small3}
                             used={usedKeys.includes(5)}
                             highlighted={isNumberHinted(small3)}/>
-                    <Number solved={finished.success} newNum={false} big={false} isPlaying={isPlaying}
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                             onClick={() => handleClick(small4.toString(), 6)} value={small4}
                             used={usedKeys.includes(6)}
                             highlighted={isNumberHinted(small4)}/>
@@ -663,7 +656,63 @@ export const KeyPad: React.FC<KeyPadProps> = ({
             </div>
         </div>
 
-    return form
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleModalOpen = () => {
+        setIsModalOpen(true);
+    };
+
+    const startGame = () => {
+        setIsPlaying(true);
+        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()));
+        // Other game start logic...
+    };
+
+    // Ensure startGame is called when the game starts
+    useEffect(() => {
+        if (isPlaying && localStorage.getItem("finished") !== "true") {
+            startGame();
+        }
+    }, [isPlaying]);
+
+    return (
+        <div className="game-container">
+            {form}
+            
+            <FinishedModal
+                show={isModalOpen}
+                clear={handleModalClose}
+                timeTaken={parseInt(localStorage.getItem("winningTime") || "0")}
+                score={scores}
+                success={localStorage.getItem("finished") === "true"}
+                currentStreak={currentStreak}
+                maxStreak={maxStreak}
+            />
+            {localStorage.getItem("finished") === "true" && !isModalOpen && (
+                <button 
+                    className="reopen-modal-button" 
+                    onClick={handleModalOpen}
+                    style={{
+                        position: 'fixed',
+                        bottom: '20px',
+                        right: '20px',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        zIndex: 1000
+                    }}
+                >
+                    Show Results
+                </button>
+            )}
+        </div>
+    );
 }
 
 
