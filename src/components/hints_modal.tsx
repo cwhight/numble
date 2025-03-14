@@ -8,41 +8,23 @@ export interface HintsModalProps {
     refresh: boolean;
 }
 
-export const HintsModal: React.FC<HintsModalProps> = ({ show, close, refresh }) => {
-    const [displayedHints, setDisplayedHints] = useState<string[]>(() => {
-        const storedHints = localStorage.getItem("displayedHints");
-        if (!storedHints) return [];
-        try {
-            const hints = JSON.parse(storedHints);
-            // Handle potential old format
-            if (Array.isArray(hints)) {
-                return hints.map(hint => typeof hint === 'string' ? hint : hint.text);
-            }
-            return [];
-        } catch {
-            return [];
-        }
-    });
+export const HintsModal: React.FC<HintsModalProps> = ({ show, close }) => {
+    const [displayedHints, setDisplayedHints] = useState<string[]>(() => 
+        JSON.parse(localStorage.getItem("displayedHints") || "[]")
+    );
+    const [hasBeenResetToday, setHasBeenResetToday] = useState<boolean>(false);
 
     useEffect(() => {
-        // Update hints when refresh prop changes
-        const storedHints = localStorage.getItem("displayedHints");
-        if (!storedHints) {
+        const lastPlayed = localStorage.getItem("lastPlayed");
+        const today = new Date().setHours(0, 0, 0, 0);
+        const lastPlayedInt = parseInt(lastPlayed || "0");
+
+        if (lastPlayedInt < today && !hasBeenResetToday) {
             setDisplayedHints([]);
-            return;
+            localStorage.setItem("displayedHints", JSON.stringify([]));
+            setHasBeenResetToday(true);
         }
-        try {
-            const hints = JSON.parse(storedHints);
-            // Handle potential old format
-            if (Array.isArray(hints)) {
-                setDisplayedHints(hints.map(hint => typeof hint === 'string' ? hint : hint.text));
-            } else {
-                setDisplayedHints([]);
-            }
-        } catch {
-            setDisplayedHints([]);
-        }
-    }, [refresh]);
+    }, [hasBeenResetToday]);
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {
@@ -80,9 +62,7 @@ export const HintsModal: React.FC<HintsModalProps> = ({ show, close, refresh }) 
                             <div className="rule-title">Previous Hints</div>
                             {displayedHints.length > 0 ? (
                                 displayedHints.map((hint, index) => (
-                                    <div key={index} className="hint-item">
-                                        <span className="hint-text">{hint}</span>
-                                    </div>
+                                    <p key={index}>{hint}</p>
                                 ))
                             ) : (
                                 <p>No hints used yet</p>
@@ -99,4 +79,4 @@ export const HintsModal: React.FC<HintsModalProps> = ({ show, close, refresh }) 
             </div>
         </div>
     );
-};
+}; 

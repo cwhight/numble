@@ -4,7 +4,7 @@ import {Working} from "./working";
 import calculate from "../utils/calculate";
 import {FinishedModal} from "./finished_modal";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import ReactGA from 'react-ga';
+import ReactGA from 'react-ga4';
 import {
     faBackspace,
     faDivide,
@@ -13,99 +13,147 @@ import {
     faPlus,
     faQuestion,
     faRefresh,
-    faUndo
+    faUndo,
+    faLightbulb
 } from '@fortawesome/free-solid-svg-icons'
-import Pause from "./pause";
-import Play from "./plat";
-import Timer from "react-compound-timerv2";
+import { Pause } from "./pause";
+import { Play } from "./play";
+import { getHint } from '../utils/solver';
 
-const TRACKING_ID = "UA-221463714-1"; // YOUR_OWN_TRACKING_ID
-
+const TRACKING_ID = "UA-221463714-1";
 ReactGA.initialize(TRACKING_ID);
 
-function isNumber(item: any) {
-    return !!item.match(/[0-9]+/);
+function isNumber(item: string): boolean {
+    return /[0-9]+/.test(item);
 }
 
-interface finished {
-    finished: boolean,
-    success: boolean
+interface Finished {
+    finished: boolean;
 }
 
-export interface score {
-    gamesWon: number
-    gamesPlayed: number
-    averageTime: number
-    bestTime: number
+export interface Score {
+    gamesWon: number;
+    gamesPlayed: number;
+    averageTime: number;
+    bestTime: number;
+    hintsUsed: number;
 }
 
-interface KeyPadProps {
-    userId: string
-    bigNums: number[]
-    smallNums: number[]
-    target: number
-    hints: string[]
-    showClock: boolean
-    refreshState: any
+export interface KeyPadProps {
+    bigNums: number[];
+    smallNums: number[];
+    target: number;
+    refreshState: () => void;
 }
 
-export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
+interface Totals {
+    equals: boolean;
+    total: number | null;
+    next: number | null;
+    operation: string | null;
+}
 
-    const {bigNums, smallNums, target, userId, hints, refreshState} = props
-
-    const [showClock, setShowClock] = useState<boolean>(props.showClock)
-    const [isPlaying, setIsPlaying] = useState<boolean>(false)
-    const [newNumbers, setNewNumbers] = useState<number[]>(JSON.parse(localStorage.getItem("newNumbers")) as number[] || [])
-    const [totals, setTotals] = useState({equals: false, total: null, next: null, operation: null});
+export const KeyPad: React.FC<KeyPadProps> = ({
+    bigNums,
+    smallNums,
+    target,
+    refreshState
+}) => {
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
+    const [newNumbers, setNewNumbers] = useState<number[]>(() => 
+        JSON.parse(localStorage.getItem("newNumbers") || "[]") as number[]
+    )
+    const [totals, setTotals] = useState<Totals>({
+        equals: false,
+        total: null,
+        next: null,
+        operation: null
+    })
 
     const [typedKeys, setTypedKeys] = useState<number[]>([])
     const [previousCalc, setPreviousCalc] = useState<number>(0)
 
-    const [usedKeys, setUsedKeys] = useState<number[]>(JSON.parse(localStorage.getItem("usedKeys")) as number[] || [])
+    const [usedKeys, setUsedKeys] = useState<number[]>(() => 
+        JSON.parse(localStorage.getItem("usedKeys") || "[]") as number[]
+    )
 
-    const parsedElapsedTime = JSON.parse(localStorage.getItem("elapsedTime")) as number || 0
-    const [elapsedTimeState, setElapsedTimeState] = useState<number>(parsedElapsedTime)
+    const [elapsedTime, setElapsedTime] = useState<number>(() => {
+        const storedTime = localStorage.getItem("elapsedTime");
+        const todaysTime = localStorage.getItem("todaysTime");
+        // If game was won today, use that time instead
+        if (todaysTime && localStorage.getItem("finished") === "true") {
+            return parseInt(todaysTime);
+        }
+        if (storedTime) {
+            return parseInt(storedTime);
+        }
+        return 0;
+    });
+    const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
-    const [finished, setIsFinished] = useState<finished>({finished: false, success: false})
+    const [finished, setIsFinished] = useState<Finished>(() => {
+        const finished = localStorage.getItem("finished") === "true";
+        return {
+            finished
+        };
+    });
+
     const [hasPlayedToday, setHasPlayedToday] = useState<boolean>(false)
-    const [solved, setSolved] = useState(JSON.parse(localStorage.getItem("solved")) as boolean || false)
-
     const [hasBeenResetToday, setHasBeenResetToday] = useState<boolean>(false)
 
-    let scores = JSON.parse(localStorage.getItem("scores")) as score
-    if (scores == undefined) {
-        let scoresSet = {
-            averageTime: 0,
-            gamesPlayed: 0,
-            gamesWon: 0,
-            bestTime: 0
-        };
-        localStorage.setItem("scores", JSON.stringify(scoresSet))
-        scores = scoresSet
-    }
+    const [scores, setScores] = useState<Score>(() => {
+        const storedScores = localStorage.getItem("scores");
+        if (!storedScores) {
+            const defaultScores = {
+                averageTime: 0,
+                gamesPlayed: 0,
+                gamesWon: 0,
+                bestTime: 0,
+                hintsUsed: 0
+            };
+            localStorage.setItem("scores", JSON.stringify(defaultScores));
+            return defaultScores;
+        }
+        return JSON.parse(storedScores) as Score;
+    });
 
-    const [currentStreak, setCurrentStreak] = useState<number>(JSON.parse(localStorage.getItem("currentStreak")) as number || 0)
-    const [maxStreak, setMaxStreak] = useState<number>(JSON.parse(localStorage.getItem("maxStreak")) as number || 0)
+    const [currentStreak, setCurrentStreak] = useState<number>(() => 
+        JSON.parse(localStorage.getItem("currentStreak") || "0") as number
+    );
+    const [maxStreak, setMaxStreak] = useState<number>(() => 
+        JSON.parse(localStorage.getItem("maxStreak") || "0") as number
+    );
 
-    let lastPlayed = localStorage.getItem("lastPlayed")
-    const lastWon = parseInt(localStorage.getItem("lastWon"))
-    let today = new Date().setHours(0, 0, 0, 0)
-    let yesterday = today - 86400000
-    const lastPlayedInt = parseInt(lastPlayed)
+    const lastPlayed = localStorage.getItem("lastPlayed");
+    const lastWon = parseInt(localStorage.getItem("lastWon") || "0");
+    const today = new Date().setHours(0, 0, 0, 0);
+    const yesterday = today - 86400000;
+    const lastPlayedInt = lastPlayed ? parseInt(lastPlayed) : 0;
+
+    const [showingHint, setShowingHint] = useState<boolean>(false);
+    const [hintNumbers, setHintNumbers] = useState<[number, number] | null>(null);
+    const [hintOperation, setHintOperation] = useState<string | null>(null);
+    const [hintMessage, setHintMessage] = useState<string>("");
+
+    const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
+
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(() => {
+        return localStorage.getItem("finished") === "true";
+    });
 
     const cacheNewNumbers = (numbers: number[]) => {
-        setNewNumbers(numbers)
-        localStorage.setItem("newNumbers", JSON.stringify(numbers))
-    }
+        setNewNumbers(numbers);
+        localStorage.setItem("newNumbers", JSON.stringify(numbers));
+    };
 
     const cacheUsedKeys = (keys: number[]) => {
-        setUsedKeys(keys)
-        localStorage.setItem("usedKeys", JSON.stringify(keys))
-    }
+        setUsedKeys(keys);
+        localStorage.setItem("usedKeys", JSON.stringify(keys));
+    };
 
     const cacheTimeRemaining = (elapsed: number) => {
-        localStorage.setItem("elapsedTime", JSON.stringify(elapsed))
-    }
+        localStorage.setItem("elapsedTime", JSON.stringify(elapsed));
+    };
 
     function clearTotals() {
         setTotals({
@@ -117,44 +165,87 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
     }
 
     const clear = () => {
+        // Prevent clearing if game is finished
+        if (localStorage.getItem("finished") === "true") return;
+        
         clearTotals();
-        setTypedKeys([])
-        cacheNewNumbers([])
-        cacheUsedKeys([])
+        setTypedKeys([]);
+        cacheNewNumbers([]);
+        cacheUsedKeys([]);
         setIsFinished({
-            finished: false,
-            success: false
-        })
-    }
+            finished: false
+        });
+        localStorage.setItem("finished", "false");
+        localStorage.setItem("displayedHints", JSON.stringify([]));
+    };
 
-    if (lastPlayedInt < today && !hasBeenResetToday) {
-        cacheNewNumbers([])
-        cacheUsedKeys([])
-        setTypedKeys([])
-        setSolved(false)
-        localStorage.setItem("solved", "false")
-        localStorage.setItem("todaysTime", "0")
-        setElapsedTimeState(0)
-        cacheTimeRemaining( 0)
-        setHasBeenResetToday(true)
-        localStorage.setItem("hintsUsed", "0")
-        localStorage.setItem("displayedHints", JSON.stringify([]))
-        refreshState()
-    }
+    useEffect(() => {
+        if (lastPlayedInt < today && !hasBeenResetToday) {
+            cacheNewNumbers([])
+            cacheUsedKeys([])
+            setTypedKeys([])
+            setIsFinished({
+                finished: false
+            })
 
-    let played: boolean
-    if (lastPlayedInt >= today && !hasPlayedToday) {
-        setHasPlayedToday(true)
-        played = true
-    }
+            setElapsedTime(0)
+            localStorage.setItem("elapsedTime", "0")
+            setHasBeenResetToday(true)
+            // Reset both hints list and count at the start of a new day
+            localStorage.setItem("hintsUsed", "0")
+            localStorage.setItem("displayedHints", JSON.stringify([]))
+            refreshState()
+        }
+    }, [lastPlayedInt, today, hasBeenResetToday, refreshState])
 
-    if (!hasPlayedToday && !played) {
-        if (solved) {
-            setSolved(false)
-            localStorage.setItem("solved", "false")
+    useEffect(() => {
+        if (!hasPlayedToday && lastPlayedInt >= today) {
+            setHasPlayedToday(true)
+        }
+    }, [hasPlayedToday, lastPlayedInt, today])
+
+    useEffect(() => {
+        if (!hasPlayedToday && localStorage.getItem("finished") === "true") {
+            setIsFinished({
+                finished: true
+            })
             localStorage.setItem("todaysTime", "0")
         }
-    }
+    }, [hasPlayedToday])
+
+    useEffect(() => {
+        // Only start timer if game hasn't been won
+        if (isPlaying && localStorage.getItem("finished") !== "true") {
+            const interval = setInterval(() => {
+                setElapsedTime(prev => prev + 1);
+            }, 1000);
+            setTimerInterval(interval);
+        } else if (timerInterval) {
+            clearInterval(timerInterval);
+            setTimerInterval(null);
+        }
+        return () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+        };
+    }, [isPlaying]);
+
+    useEffect(() => {
+        // Initialize elapsedTime and todaysTime from local storage
+        const storedElapsedTime = localStorage.getItem("elapsedTime");
+        const storedTodaysTime = localStorage.getItem("todaysTime");
+        if (storedTodaysTime && localStorage.getItem("finished") === "true") {
+            setElapsedTime(parseInt(storedTodaysTime));
+        } else if (storedElapsedTime) {
+            setElapsedTime(parseInt(storedElapsedTime));
+        }
+    }, []);
+
+    useEffect(() => {
+        // Update elapsedTime in storage whenever it changes
+        localStorage.setItem("elapsedTime", elapsedTime.toString());
+    }, [elapsedTime]);
 
     const big1 = bigNums[0]
     const big2 = bigNums[1]
@@ -173,77 +264,81 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         });
     }, []);
 
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    };
 
-    const gameOver = (success: boolean) => {
+    const gameOver = () => {
         ReactGA.event({
             category: 'Game',
             action: 'Won',
-            value: elapsedTimeState
-        })
+            value: elapsedTime
+        });
 
-        localStorage.setItem("todaysTime", elapsedTimeState.toString())
-        saveScore(success, elapsedTimeState)
-        const hintsUsed = JSON.parse(localStorage.getItem("hintsUsed")) as number || 0
-        let newStreak: number
+        localStorage.setItem("todaysTime", elapsedTime.toString());
+        localStorage.setItem("winningTime", elapsedTime.toString());
+        saveScore(true, elapsedTime);
+        const hintsUsed = parseInt(localStorage.getItem("hintsUsed") || "0");
+        let newStreak: number;
         if (hintsUsed > 0) {
-            newStreak = 0
+            newStreak = 0;
         } else if (lastWon > yesterday) {
             newStreak = currentStreak + 1;
         } else {
-            newStreak = 1
+            newStreak = 1;
         }
 
-        localStorage.setItem("lastWon", JSON.stringify(Date.now()))
-
-        localStorage.setItem("currentStreak", newStreak.toString())
-        setCurrentStreak(newStreak)
+        localStorage.setItem("lastWon", JSON.stringify(Date.now()));
+        localStorage.setItem("currentStreak", newStreak.toString());
+        setCurrentStreak(newStreak);
 
         if (newStreak > maxStreak) {
-            localStorage.setItem("maxStreak", newStreak.toString())
-            setMaxStreak(newStreak)
+            localStorage.setItem("maxStreak", newStreak.toString());
+            setMaxStreak(newStreak);
         }
 
-        localStorage.setItem("finished", "true")
-
+        localStorage.setItem("finished", "true");
         setIsFinished({
-            finished: true,
-            success: true
-        })
-
-        setSolved(true)
-        localStorage.setItem("solved", "true")
-
-        setIsPlaying(false)
-    }
+            finished: true
+        });
+        setIsPlaying(false);
+    };
 
     const saveScore = (success: boolean, timeTaken: number) => {
+        const newScores = { ...scores };
+        const hintsUsedInGame = parseInt(localStorage.getItem("hintsUsed") || "0");
+        
         if (success) {
-            if (scores.gamesWon == 0 || scores.gamesWon == null) {
-                scores.averageTime = timeTaken
+            if (newScores.gamesWon === 0) {
+                newScores.averageTime = timeTaken;
             } else {
-                scores.averageTime = (scores.averageTime * scores.gamesWon + timeTaken) / (scores.gamesWon + 1)
+                newScores.averageTime = (newScores.averageTime * newScores.gamesWon + timeTaken) / (newScores.gamesWon + 1);
             }
-            scores.gamesWon += 1
+            newScores.gamesWon += 1;
         }
 
-        if ((timeTaken < scores.bestTime || scores.bestTime == undefined || scores.bestTime == 0) && success) {
-            scores.bestTime = timeTaken
+        if ((timeTaken < newScores.bestTime || newScores.bestTime === 0) && success) {
+            newScores.bestTime = timeTaken;
         }
-        scores.gamesPlayed += 1
+        newScores.gamesPlayed += 1;
+        newScores.hintsUsed = (newScores.hintsUsed || 0) + hintsUsedInGame;
 
-        localStorage.setItem("scores", JSON.stringify(scores))
-        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
-
-        setHasPlayedToday(true)
+        localStorage.setItem("scores", JSON.stringify(newScores));
+        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()));
+        setScores(newScores);
+        setHasPlayedToday(true);
     }
 
     const handleClick = (value: string, key?: number) => {
-        if (solved) {
-            return
+        // Prevent any moves if game is finished
+        if (finished.finished || localStorage.getItem("finished") === "true") {
+            return;
         }
 
         if (!isPlaying) {
-            return
+            return;
         }
 
         if (value == "AC") {
@@ -333,7 +428,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
                     typedKeys.pop()
                 }
                 setPreviousCalc(0)
-                typedKeys.push(key)
+                typedKeys.push(key || 0)
                 setTypedKeys(typedKeys)
             }
         }
@@ -344,7 +439,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
 
         if (newTotals.equals) {
             if (newTotals.total == target) {
-                gameOver(true)
+                gameOver()
                 return
             }
 
@@ -353,7 +448,7 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
             setPreviousCalc(newNumbers.length + 7)
             setTypedKeys([])
             cacheUsedKeys(usedKeys)
-            newNumbers.push(newTotals.total)
+            newNumbers.push(newTotals.total || 0)
             cacheNewNumbers(newNumbers)
             setTotals({
                 equals: false,
@@ -364,136 +459,260 @@ export const KeyPad: React.FC<KeyPadProps> = (props: KeyPadProps) => {
         }
     };
 
+    const showHint = () => {
+        // Prevent hints if game is finished
+        if (!isPlaying || finished.finished || localStorage.getItem("finished") === "true") return;
+
+        // Increment hints used counter
+        const currentHintsUsed = parseInt(localStorage.getItem("hintsUsed") || "0");
+        localStorage.setItem("hintsUsed", (currentHintsUsed + 1).toString());
+
+        const availableNumbers = [
+            ...bigNums,
+            ...smallNums,
+            ...newNumbers
+        ].filter((_, index) => !usedKeys.includes(index + 1));
+
+        const hint = getHint(availableNumbers, target);
+        
+        if (hint) {
+            const hintText = `${hint.num1} ${hint.operation} ${hint.num2} = ${hint.result}`;
+            setHintNumbers([hint.num1, hint.num2]);
+            setHintOperation(hint.operation);
+            setShowingHint(true);
+            setHintMessage(`Try: ${hintText}`);
+            
+            // Store unique hints only
+            const displayedHints = JSON.parse(localStorage.getItem("displayedHints") || "[]");
+            if (!displayedHints.includes(hintText)) {
+                displayedHints.push(hintText);
+                localStorage.setItem("displayedHints", JSON.stringify(displayedHints));
+            }
+            
+            // Find indices to highlight
+            const allNumbers = [...bigNums, ...smallNums, ...newNumbers];
+            const indices: number[] = [];
+            
+            // Find first occurrence of first hint number
+            const firstNumIndex = allNumbers.findIndex(num => num === hint.num1);
+            if (firstNumIndex !== -1) indices.push(firstNumIndex);
+            
+            // Find first occurrence of second hint number after the first number
+            // (unless it's the same number, then find first occurrence)
+            const secondNumIndex = hint.num1 === hint.num2 
+                ? firstNumIndex 
+                : allNumbers.findIndex(num => num === hint.num2);
+            if (secondNumIndex !== -1) indices.push(secondNumIndex);
+            
+            setHighlightedIndices(indices);
+            
+            // Hide hint after 3 seconds
+            setTimeout(() => {
+                setShowingHint(false);
+                setHintNumbers(null);
+                setHintOperation(null);
+                setHintMessage("");
+                setHighlightedIndices([]);
+            }, 3000);
+
+            // Refresh state to update modal
+            refreshState();
+        } else {
+            setHintMessage("No solution found with current numbers");
+            setTimeout(() => {
+                setHintMessage("");
+            }, 3000);
+        }
+    };
+
+    const isNumberHinted = (value: number) => {
+        if (!showingHint || !hintNumbers) return false;
+        
+        // Get all numbers in the game
+        const allNumbers = [
+            ...bigNums,
+            ...smallNums,
+            ...newNumbers
+        ];
+        
+        // Get the index of the current number in the full array
+        const currentIndex = allNumbers.indexOf(value);
+        
+        // Only highlight if this index is in our highlighted indices
+        return highlightedIndices.includes(currentIndex);
+    };
+
+    const isOperationHinted = (operation: string) => {
+        return showingHint && hintOperation === operation;
+    };
+
     let newNums = newNumbers.map((num, i) => {
-        return <Number solved={solved} newNum={true} big={false} isPlaying={isPlaying}
+        return <Number solved={finished.finished} newNum={true} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
                        onClick={() => handleClick(num.toString(), 7 + i)} value={num}
-                       used={usedKeys.includes(7 + i)}/>
+                       used={usedKeys.includes(7 + i)}
+                       highlighted={isNumberHinted(num)}/>
     })
-
-    const play = () => {
-        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()))
-        if (solved) {
-            return
-        }
-
-        setShowClock(true)
-        if (isPlaying) {
-            setShowClock(false)
-        }
-
-        setIsPlaying(!isPlaying)
-    }
 
     let timerRef = React.createRef<HTMLDivElement>()
     const form =
         <div className={"game-wrapper h-100 d-flex flex-column justify-content-around align-items-center"}>
             <div>
-                <FinishedModal currentStreak={currentStreak} maxStreak={maxStreak}
-                               timerRef={timerRef} timeTaken={elapsedTimeState} score={scores}
-                               clear={() => {}}
-                               show={finished.finished} success={finished.success}/>
-
                 <div ref={timerRef} className={`timer-wrapper mb-3`}>
-                    <Timer
-                        onStart={() => play()}
-                        onPause={() => play()}
-                        initialTime={parsedElapsedTime * 1000} startImmediately={false}
-                    >
-                        {({start, pause, getTime, stop}: any) => {
-                            const elapsedTime = Math.floor(getTime()/1000)
-                            setElapsedTimeState(elapsedTime)
-                            if (solved) {
-                                pause()
-                            }
-                            return (
-                                    <React.Fragment>
-                                        <div className={"d-flex flex-column"}>
-                                            <div className={"stopwatch d-flex"}>
-                                                <h1>{elapsedTime < 600 ? "0" :"" }<Timer.Minutes />:</h1><h1>{elapsedTime % 60 < 10 ? "0" : ""}<Timer.Seconds/></h1>
-                                            </div>
-                                            <br/>
-                                            <div className={"mb-3"}>
-                                                {isPlaying ? <Pause onPlayerClick={() => {
-                                                    pause()
-                                                    cacheTimeRemaining(elapsedTime)
-                                                    setElapsedTimeState(elapsedTime)
-                                                }}/> : <Play onPlayerClick={start}/>}
-                                            </div>
-                                        </div>
-                                    </React.Fragment>
-                                )
-                            }
-                        }
-
-                    </Timer>
+                    <div className="timer-circle">
+                        <div className="timer-content">
+                            <div className="timer-display">
+                                {formatTime(localStorage.getItem("winningTime") ? parseInt(localStorage.getItem("winningTime")!) : elapsedTime)}
+                            </div>
+                            <div>
+                                {isPlaying && localStorage.getItem("finished") !== "true" ? (
+                                    <Pause onPlayerClick={() => {
+                                        setIsPlaying(false);
+                                        cacheTimeRemaining(elapsedTime);
+                                        setElapsedTime(elapsedTime);
+                                    }}/>
+                                ) : localStorage.getItem("finished") !== "true" ? (
+                                    <Play onPlayerClick={() => {
+                                        if (localStorage.getItem("finished") !== "true") {
+                                            setIsPlaying(true);
+                                        }
+                                    }}/>
+                                ) : null}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div>
-
                 <div className={"p-3 text-center my-1 mx-2"}>
-                    <h1 className={"target"}>{isPlaying || solved ? target :
-                        <FontAwesomeIcon icon={faQuestion}/>}</h1>
+                    <h1 className={"target"}>{isPlaying || finished.finished ? target : <FontAwesomeIcon icon={faQuestion}/>}</h1>
                 </div>
             </div>
             <div className="game-board">
                 <Working totals={totals}/>
+                {hintMessage && (
+                    <div className="hint-message">
+                        {hintMessage}
+                    </div>
+                )}
             </div>
-            <div className="game-board d-flex flex-column justify-content-around">
-                <div className={"d-flex flex-column justify-content-around"}>
-                    <div className={"d-flex justify-content-end"}>
-                        {newNums}
-                    </div>
-                    <div className={"d-flex justify-content-between"}>
-                        <Number solved={solved} newNum={false} big={true} isPlaying={isPlaying}
-                                onClick={() => handleClick(big1.toString(), 1)} value={big1}
-                                used={usedKeys.includes(1)}/>
-                        <Number solved={solved} newNum={false} big={true} isPlaying={isPlaying}
-                                onClick={() => handleClick(big2.toString(), 2)} value={big2}
-                                used={usedKeys.includes(2)}/>
-                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
-                                onClick={() => handleClick(small1.toString(), 3)} value={small1}
-                                used={usedKeys.includes(3)}/>
-                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
-                                onClick={() => handleClick(small2.toString(), 4)} value={small2}
-                                used={usedKeys.includes(4)}/>
-                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
-                                onClick={() => handleClick(small3.toString(), 5)} value={small3}
-                                used={usedKeys.includes(5)}/>
-                        <Number solved={solved} newNum={false} big={false} isPlaying={isPlaying}
-                                onClick={() => handleClick(small4.toString(), 6)} value={small4}
-                                used={usedKeys.includes(6)}/>
-                    </div>
+            <div className="game-board">
+                <div className="number-container">
+                    {newNums}
+                </div>
+                <div className="number-container">
+                    <Number solved={finished.finished} newNum={false} big={true} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
+                            onClick={() => handleClick(big1.toString(), 1)} value={big1}
+                            used={usedKeys.includes(1)}
+                            highlighted={isNumberHinted(big1)}/>
+                    <Number solved={finished.finished} newNum={false} big={true} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
+                            onClick={() => handleClick(big2.toString(), 2)} value={big2}
+                            used={usedKeys.includes(2)}
+                            highlighted={isNumberHinted(big2)}/>
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
+                            onClick={() => handleClick(small1.toString(), 3)} value={small1}
+                            used={usedKeys.includes(3)}
+                            highlighted={isNumberHinted(small1)}/>
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
+                            onClick={() => handleClick(small2.toString(), 4)} value={small2}
+                            used={usedKeys.includes(4)}
+                            highlighted={isNumberHinted(small2)}/>
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
+                            onClick={() => handleClick(small3.toString(), 5)} value={small3}
+                            used={usedKeys.includes(5)}
+                            highlighted={isNumberHinted(small3)}/>
+                    <Number solved={finished.finished} newNum={false} big={false} isPlaying={(isPlaying && localStorage.getItem("finished") !== "true") || finished.finished}
+                            onClick={() => handleClick(small4.toString(), 6)} value={small4}
+                            used={usedKeys.includes(6)}
+                            highlighted={isNumberHinted(small4)}/>
                 </div>
             </div>
-            <div className="game-board d-flex flex-column justify-content-around">
-                <div className={"mb-3 d-flex flex-column justify-content-around"}>
-                    <div className={"d-flex justify-content-between"}>
-                        <button className={"round-clickable"} onClick={() => handleClick("+")}><FontAwesomeIcon
-                            icon={faPlus}/></button>
-                        <button className={"round-clickable"} onClick={() => handleClick("-")}><FontAwesomeIcon
-                            icon={faMinus}/></button>
-                        <button className={"round-clickable"} onClick={() => handleClick("x")}><FontAwesomeIcon
-                            icon={faMultiply}/></button>
-                        <button className={"round-clickable"} onClick={() => handleClick("÷")}><FontAwesomeIcon
-                            icon={faDivide}/></button>
-                    </div>
-
+            <div className="game-board">
+                <div className="operation-container">
+                    <button className={`operation-button ${isOperationHinted("+") ? "highlighted" : ""}`} 
+                            onClick={() => handleClick("+")}><FontAwesomeIcon icon={faPlus}/></button>
+                    <button className={`operation-button ${isOperationHinted("-") ? "highlighted" : ""}`} 
+                            onClick={() => handleClick("-")}><FontAwesomeIcon icon={faMinus}/></button>
+                    <button className={`operation-button ${isOperationHinted("x") ? "highlighted" : ""}`} 
+                            onClick={() => handleClick("x")}><FontAwesomeIcon icon={faMultiply}/></button>
+                    <button className={`operation-button ${isOperationHinted("÷") ? "highlighted" : ""}`} 
+                            onClick={() => handleClick("÷")}><FontAwesomeIcon icon={faDivide}/></button>
                 </div>
             </div>
-            <div className={"game-board d-flex justify-content-between"}>
-                <div>
-
-                    <button className={"round-clickable"} onClick={() => handleClick("Undo")}><FontAwesomeIcon
-                        icon={faUndo}/></button>
-                    <button className={"round-clickable"} onClick={() => handleClick("<-")}><FontAwesomeIcon
-                        icon={faBackspace}/></button>
+            <div className="game-board">
+                <div className="operation-container">
+                    <button className="operation-button" onClick={() => handleClick("Undo")}>
+                        <FontAwesomeIcon icon={faUndo}/>
+                    </button>
+                    <button className="operation-button" onClick={() => handleClick("<-")}>
+                        <FontAwesomeIcon icon={faBackspace}/>
+                    </button>
+                    <button className="operation-button" onClick={() => handleClick("AC")}>
+                        <FontAwesomeIcon icon={faRefresh}/>
+                    </button>
+                    <button className="operation-button" onClick={showHint}>
+                        <FontAwesomeIcon icon={faLightbulb}/>
+                    </button>
                 </div>
-                <button className={"round-clickable"} onClick={() => handleClick("AC")}><FontAwesomeIcon
-                    icon={faRefresh}/></button>
             </div>
         </div>
 
-    return form
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleModalOpen = () => {
+        setIsModalOpen(true);
+    };
+
+    const startGame = () => {
+        setIsPlaying(true);
+        localStorage.setItem("lastPlayed", JSON.stringify(Date.now()));
+        // Other game start logic...
+    };
+
+    // Ensure startGame is called when the game starts
+    useEffect(() => {
+        if (isPlaying && localStorage.getItem("finished") !== "true") {
+            startGame();
+        }
+    }, [isPlaying]);
+
+    return (
+        <div className="game-container">
+            {form}
+            
+            <FinishedModal
+                show={isModalOpen}
+                clear={handleModalClose}
+                timeTaken={parseInt(localStorage.getItem("winningTime") || "0")}
+                score={scores}
+                success={localStorage.getItem("finished") === "true"}
+                currentStreak={currentStreak}
+                maxStreak={maxStreak}
+            />
+            {localStorage.getItem("finished") === "true" && !isModalOpen && (
+                <button 
+                    className="reopen-modal-button" 
+                    onClick={handleModalOpen}
+                    style={{
+                        position: 'fixed',
+                        bottom: '20px',
+                        right: '20px',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        zIndex: 1000
+                    }}
+                >
+                    Show Results
+                </button>
+            )}
+        </div>
+    );
 }
 
 

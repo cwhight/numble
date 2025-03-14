@@ -1,24 +1,33 @@
 import React from "react";
-import {ButtonProps} from "react-bootstrap";
+import { ButtonProps } from "react-bootstrap";
 
 export interface NumberProps extends ButtonProps {
-    isPlaying: boolean
-    onClick?: any
-    value: number
-    used: boolean
-    big: boolean
-    newNum: boolean
-    solved: boolean
+    isPlaying: boolean;
+    onClick?: () => void;
+    value: number;
+    used: boolean;
+    big: boolean;
+    newNum: boolean;
+    solved: boolean;
+    highlighted?: boolean;
 }
 
-export const Number: React.FC<NumberProps> = (props: NumberProps) => {
-    var {value, used, onClick, isPlaying, big, newNum, solved} = props
-
+export const Number: React.FC<NumberProps> = ({ value, used, onClick, isPlaying, big, newNum, solved, highlighted }) => {
     const click = () => {
-        if (!used) {
-            onClick()
+        if (!used && onClick) {
+            onClick();
         }
-    }
+    };
 
-    return <button onClick={click} className={`clickable p-2 mb-2 ${used ? "used" : ""} ${big ? "bigNum" : newNum ? "newNum" : "smallNum"}`}>{ isPlaying || solved ? value : ""}</button>
-}
+    const className = `number-button ${used ? "used" : ""} ${big ? "big" : newNum ? "new" : "small"} ${highlighted ? "highlighted" : ""}`;
+
+    return (
+        <button 
+            onClick={click} 
+            className={className}
+            disabled={used || !isPlaying}
+        >
+            {isPlaying || solved ? value : ""}
+        </button>
+    );
+};

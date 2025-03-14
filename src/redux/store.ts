@@ -1,7 +1,11 @@
 import { createStore } from "redux";
 import rotateReducer from "./reducer";
 
-function configureStore(state = { rotating: true }) {
+interface RootState {
+    rotating: boolean;
+}
+
+function configureStore(state: RootState = { rotating: true }) {
     return createStore(rotateReducer, state);
 }
 

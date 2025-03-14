@@ -1,76 +1,153 @@
 import React, {useState} from "react";
-import {Button} from "react-bootstrap";
-import {score} from "./keypad";
-import {exportComponentAsJPEG} from "react-component-export-image";
+import {Score} from "./keypad";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faTimes, faCopy} from "@fortawesome/free-solid-svg-icons";
+import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 
 export interface FinishedModalProps {
-    timeTaken: number
-    score: score
-    clear: any
-    success: boolean
-    show: boolean
-    timerRef: any
-    currentStreak: number
-    maxStreak: number
+    timeTaken: number;
+    score: Score;
+    clear: () => void;
+    success: boolean;
+    show: boolean;
+    currentStreak: number;
+    maxStreak: number;
 }
 
-export const FinishedModal: React.FC<FinishedModalProps> = (props: FinishedModalProps) => {
-    const {success, clear, score, timeTaken, timerRef, currentStreak, maxStreak} = props
-    let show = props.show
-    const reset = () => {
-        clear()
-        show = false
-    }
-
+export const FinishedModal: React.FC<FinishedModalProps> = ({
+    success,
+    clear,
+    score,
+    timeTaken,
+    currentStreak,
+    maxStreak,
+    show
+}) => {
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
-    let minutes = Math.floor(timeTaken / 60)
-    let seconds = timeTaken % 60
-    let timeMessage = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`
-    async function copyToClipboard() {
+    const hintsUsedToday = parseInt(localStorage.getItem("hintsUsed") || "0");
 
-        const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
-${success ? `Today's Time: 🎉 ${timeMessage} 🎉` : ""}
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.target === e.currentTarget) {
+            clear();
+        }
+    };
+
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    };
+
+    const getShareText = () => {
+        const formattedTime = formatTime(timeTaken);
+        return `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
+${success ? `Time: 🎉 ${formattedTime} 🎉
+Hints Used: ${hintsUsedToday} 🤔` : ""}
 https://www.numble-game.co.uk`;
+    };
+
+    const copyToClipboard = async () => {
+        const shareString = getShareText();
 
         setMsg("Copied to clipboard!");
         setShowCopyMsg(true);
         setTimeout(() => setShowCopyMsg(false), 2000);
+
         if ("clipboard" in navigator) {
-            return await navigator.clipboard.writeText(shareString);
+            await navigator.clipboard.writeText(shareString);
         } else {
-            return document.execCommand("copy", true, shareString);
+            document.execCommand("copy", true, shareString);
         }
-    }
+    };
 
-    const message = success ? `Great Work - you solved it in ${timeTaken} seconds` : "Unlucky this time"
+    const shareToWhatsApp = () => {
+        const shareString = encodeURIComponent(getShareText());
+        window.open(`https://wa.me/?text=${shareString}`, '_blank');
+    };
 
-    const copyMessage = showCopyMsg ? <span>{msg}</span> : null
+    const className = show ? "modal-cont display-block" : "modal-cont display-none";
 
-    const buttons = success ?
-        <div className={"mt-3"}>
-            <Button onClick={() => copyToClipboard()} className={"w-100 btn"}>Share</Button>
-            <div>{copyMessage}</div>
+    return (
+        <div className={className} onClick={handleBackdropClick}>
+            <div id="score-display" className="modal-main-cont">
+                <div className="modal-header">
+                    <button className="modal-close-button" onClick={clear}>
+                        <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                </div>
+
+                <div className="modal-content">
+                    {success && (
+                        <div className="todays-score">
+                            <div className="time-display highlight">
+                                {formatTime(timeTaken)}
+                            </div>
+                            <div className="hints-used">
+                                Hints Used Today: {hintsUsedToday}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="streak-container">
+                        <div className="streak-box">
+                            <div className="streak-value">{currentStreak}</div>
+                            <div className="streak-label">Current Streak</div>
+                        </div>
+                        <div className="streak-box">
+                            <div className="streak-value">{maxStreak}</div>
+                            <div className="streak-label">Max Streak</div>
+                        </div>
+                    </div>
+
+                    <div className="modal-stats">
+                        <div className="stat-box">
+                            <div className="stat-label">Games Won</div>
+                            <div className="stat-value">{score.gamesWon}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Games Played</div>
+                            <div className="stat-value">{score.gamesPlayed}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Average Time</div>
+                            <div className="stat-value">{formatTime(Math.floor(score.averageTime))}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Best Time</div>
+                            <div className="stat-value">{formatTime(score.bestTime)}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Total Hints Used</div>
+                            <div className="stat-value">{score.hintsUsed || 0}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="modal-footer">
+                    <div className="share-buttons" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '10px', width: '100%' }}>
+                        <button className="modal-button primary" style={{ padding: '5px', width: '45%' }} onClick={copyToClipboard}>
+                            <FontAwesomeIcon icon={faCopy} />
+                        </button>
+                        <button className="modal-button whatsapp" style={{ padding: '5px', width: '45%' }} onClick={shareToWhatsApp}>
+                            <FontAwesomeIcon icon={faWhatsapp} />
+                        </button>
+                    </div>
+                </div>
+
+                {showCopyMsg && (
+                    <div className="copy-message">
+                        {msg}
+                    </div>
+                )}
+
+                <div className="modal-footer-text">
+                    Enjoying Numble? Try our sister game{" "}
+                    <a href="https://www.jumble-game.co.uk" target="_blank" rel="noopener noreferrer">
+                        Jumble
+                    </a>
+                </div>
+            </div>
         </div>
-        : <div className={"mt-3"}>
-            <Button onClick={reset} className={"btn"}>Try Again</Button>
-        </div>
-
-    const className = show ? "modal-cont display-block" : "modal-cont display-none"
-
-    return <div className={className}>
-        <div className={"p-3 modal-main-cont d-flex flex-column justify-content-around"}>
-
-            <h2 className={"text-center"}>{message}</h2>
-            <h4><em>Games played:</em> {score.gamesPlayed}</h4>
-            <h4><em>Games won:</em> {score.gamesWon}</h4>
-            <h4><em>Average Time:</em> {score.gamesWon > 0 ? Math.round(score.averageTime) + " Seconds" : "N/A"}</h4>
-            <h4><em>Best Score:</em> {score.gamesWon > 0 ? score.bestTime + " Seconds" : "N/A"}</h4>
-            <h4><em>Streak:</em> {currentStreak}</h4>
-            <h4><em>Max Streak:</em> {maxStreak}</h4>
-            {buttons}
-
-            <span className={"mt-3"}>Enjoying Numble? Why not try our sister game <a href={"https://www.jumble-game.co.uk"}>Jumble</a></span>
-        </div>
-    </div>
-}
+    );
+};
