@@ -29,10 +29,10 @@
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.5rem;
     margin: 1rem 0;
-    width: min(90vw, 400px);
+    width: min(90vw, 500px);
 }
 
 .grid-cell {
@@ -43,7 +43,7 @@
     background-color: #2589BD;
     color: whitesmoke;
     font-family: 'Yusei Magic', sans-serif;
-    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    font-size: clamp(1.2rem, 5vw, 2rem);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -172,4 +172,46 @@
     .words-found {
         margin-top: 0.5rem;
     }
+}
+
+.final-score {
+    background-color: #f4f4f4;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    width: min(90vw, 400px);
+    margin: 1rem 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.final-score h2 {
+    font-family: 'Yusei Magic', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    color: #333;
+    margin: 0 0 1rem 0;
+}
+
+.final-score p {
+    font-family: 'Roboto', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    color: #2589BD;
+    margin: 0.5rem 0;
+}
+
+.final-score button {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: #7BC950;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.final-score button:hover {
+    background-color: #6ab340;
 } 
