@@ -44,7 +44,7 @@ export const FinishedModal: React.FC<FinishedModalProps> = ({
         return `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
 ${success ? `Time: 🎉 ${formattedTime} 🎉
 Hints Used: ${hintsUsedToday} 🤔` : ""}
-https://www.numble-game.co.uk`;
+https://sumble.onrender.com`;
     };
 
     const copyToClipboard = async () => {
@@ -142,7 +142,7 @@ https://www.numble-game.co.uk`;
                 )}
 
                 <div className="modal-footer-text">
-                    Enjoying Numble? Try our sister game{" "}
+                    Enjoying Sumble? Try our sister game{" "}
                     <a href="https://www.jumble-game.co.uk" target="_blank" rel="noopener noreferrer">
                         Jumble
                     </a>

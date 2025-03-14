@@ -33,7 +33,7 @@ export const ScoresModal: React.FC<ScoresModalProps> = ({ show, close, scores })
     const copyToClipboard = async () => {
         const shareString = `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
 ${todaysScore !== 0 ? `Today's Time: 🎉 ${timeMessage} 🎉` : ""}
-https://www.numble-game.co.uk`;
+https://sumble.onrender.com`;
 
         setShowCopyMsg(true);
         setTimeout(() => setShowCopyMsg(false), 2000);
@@ -112,7 +112,7 @@ https://www.numble-game.co.uk`;
                 )}
 
                 <div className="modal-footer-text">
-                    Enjoying Numble? Try our sister game <a href="https://www.jumble-game.co.uk">Jumble</a>
+                    Enjoying Sumble? Try our sister game <a href="https://www.jumble-game.co.uk">Jumble</a>
                 </div>
             </div>
         </div>

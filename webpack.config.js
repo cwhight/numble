@@ -48,7 +48,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: 'src/index.ejs',
             templateParameters: {
-                pageTitle: 'Numble - A Daily Number Puzzle',
+                pageTitle: 'Sumble - A Daily Number Puzzle',
             },
         }),
     ],

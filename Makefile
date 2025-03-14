@@ -1,2 +1,2 @@
 publish-docker:
-		docker build . -t numble
+		docker build . -t sumble
