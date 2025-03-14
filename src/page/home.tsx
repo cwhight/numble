@@ -70,6 +70,7 @@ export const Home: React.FC = () => {
                 showScores={toggleStatsModal} 
                 showHints={() => setShowHintsModal(true)} 
                 showRules={toggleModal}
+                currentGame="number"
             />
             <FirstModal 
                 close={() => setShowModal(false)} 

@@ -1,0 +1,175 @@
+.word-grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.word-grid-container h1 {
+    font-family: 'Yusei Magic', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    margin: 0;
+    color: #333;
+}
+
+.current-word {
+    font-family: 'Yusei Magic', sans-serif;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    color: #2589BD;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin: 1rem 0;
+    width: min(90vw, 400px);
+}
+
+.grid-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2589BD;
+    color: whitesmoke;
+    font-family: 'Yusei Magic', sans-serif;
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    box-shadow: 0 4px 8px rgba(37, 137, 189, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.grid-cell.selected {
+    background-color: #f4b942;
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(244, 185, 66, 0.3);
+}
+
+.grid-cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 50%;
+}
+
+.grid-cell:hover:not(.selected) {
+    transform: scale(1.05);
+    background-color: #2998d3;
+}
+
+.word-actions {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.word-actions button {
+    padding: 0.75rem 1.5rem;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.word-actions button:first-child {
+    background-color: #7BC950;
+}
+
+.word-actions button:first-child:hover:not(:disabled) {
+    background-color: #6ab340;
+}
+
+.word-actions button:last-child {
+    background-color: #f4b942;
+}
+
+.word-actions button:last-child:hover:not(:disabled) {
+    background-color: #e5aa33;
+}
+
+.word-actions button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.words-found {
+    width: min(90vw, 400px);
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+}
+
+.words-found h2 {
+    font-family: 'Yusei Magic', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.words-found ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+}
+
+.words-found li {
+    font-family: 'Roboto', sans-serif;
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-height: 600px) {
+    .word-grid-container {
+        gap: 0.5rem;
+    }
+
+    .current-word {
+        min-height: 2rem;
+        font-size: clamp(1.2rem, 4vw, 1.8rem);
+    }
+
+    .grid-cell {
+        font-size: clamp(1.2rem, 5vw, 2rem);
+    }
+
+    .word-actions {
+        margin: 0.5rem 0;
+    }
+
+    .word-actions button {
+        padding: 0.5rem 1rem;
+    }
+
+    .words-found {
+        margin-top: 0.5rem;
+    }
+} 

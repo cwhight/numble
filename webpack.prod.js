@@ -35,7 +35,19 @@ module.exports = {
             },
             {
                 test: /\.s[ac]ss$/i,
-                use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    "css-loader",
+                    {
+                        loader: "sass-loader",
+                        options: {
+                            implementation: require("sass"),
+                            sassOptions: {
+                                quietDeps: true
+                            }
+                        }
+                    }
+                ],
             },
             {
                 test: /\.(jpg|jpeg|png|gif|mp3|svg)$/,

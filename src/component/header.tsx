@@ -1,21 +1,25 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
     faChartBar, 
     faLightbulb, 
     faInfo, 
     faBars,
-    faXmark
+    faXmark,
+    faGamepad
 } from "@fortawesome/free-solid-svg-icons";
 
 interface HeaderProps {
     showScores: () => void;
     showRules: () => void;
     showHints: () => void;
+    currentGame: 'number' | 'word';
 }
 
-const Header: React.FC<HeaderProps> = ({ showScores, showRules, showHints }) => {
+const Header: React.FC<HeaderProps> = ({ showScores, showRules, showHints, currentGame }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -23,6 +27,15 @@ const Header: React.FC<HeaderProps> = ({ showScores, showRules, showHints }) => 
 
     const handleMenuClick = (action: () => void) => {
         action();
+        setIsMenuOpen(false);
+    };
+
+    const switchGame = () => {
+        if (currentGame === 'number') {
+            navigate('/word-grid');
+        } else {
+            navigate('/number-game');
+        }
         setIsMenuOpen(false);
     };
 
@@ -61,6 +74,14 @@ const Header: React.FC<HeaderProps> = ({ showScores, showRules, showHints }) => 
                     >
                         <FontAwesomeIcon icon={faLightbulb} />
                         Hint
+                    </button>
+                    <button 
+                        className="menu-item"
+                        onClick={() => handleMenuClick(switchGame)}
+                        aria-label="Switch game"
+                    >
+                        <FontAwesomeIcon icon={faGamepad} />
+                        Switch to {currentGame === 'number' ? 'Word Grid' : 'Number Game'}
                     </button>
                 </div>
             </div>

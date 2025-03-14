@@ -20,6 +20,7 @@ import { Pause } from "./pause";
 import { Play } from "./play";
 import { getHint } from '../utils/solver';
 import Confetti from 'react-confetti';
+import Header from "./header";
 
 const TRACKING_ID = "UA-221463714-1";
 ReactGA.initialize(TRACKING_ID);
@@ -689,6 +690,12 @@ export const KeyPad: React.FC<KeyPadProps> = ({
 
     return (
         <div className="game-container">
+            <Header 
+                showScores={handleModalOpen}
+                showRules={() => {}}
+                showHints={showHint}
+                currentGame="number"
+            />
             {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
             {form}
             
