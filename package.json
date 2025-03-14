@@ -33,6 +33,7 @@
     "query-string": "^8.2.0",
     "react": "^18.2.0",
     "react-async": "^10.0.1",
+    "react-confetti": "^6.4.0",
     "react-countdown-circle-timer": "^3.0.8",
     "react-countdown-clock": "^2.9.0",
     "react-countup": "^6.5.0",
