@@ -82,11 +82,6 @@ https://sumble.onrender.com`;
     return (
         <div className={className} onClick={handleBackdropClick}>
             <div className="modal-main-cont">
-                <div className="modal-header">
-                    <h2>{state.finished ? "Congratulations!" : "Statistics"}</h2>
-                    {showCopyMsg && <div className="copy-message">{msg}</div>}
-                </div>
-
                 <div className="modal-stats">
                     <div className="stat-box">
                         <div className="stat-label">Games Won</div>
