@@ -150,11 +150,13 @@ export const KeyPad: React.FC<KeyPadProps> = ({
                     lastGenerated: today
                 };
             } else {
-                // Use saved state
-                initializedState = parsedState;
+                // Use saved state and show modal if game is finished
+                initializedState = {
+                    ...parsedState,
+                    isModalOpen: parsedState.finished
+                };
             }
         }
-
 
         return {
             ...initializedState,
@@ -162,7 +164,8 @@ export const KeyPad: React.FC<KeyPadProps> = ({
             displayedHints: initializedState.displayedHints,
             hintsUsed: initializedState.score.hintsUsed,
             lastGenerated: today,
-            lastPlayed: today
+            lastPlayed: today,
+            isModalOpen: initializedState.finished // Ensure modal is shown if game is finished
         };
     });
 
@@ -269,33 +272,26 @@ export const KeyPad: React.FC<KeyPadProps> = ({
         }
     }, [hasPlayedToday, state.finished]);
 
-    const big1 = bigNums[0]
-    const big2 = bigNums[1]
-
-    const small1 = smallNums[0]
-    const small2 = smallNums[1]
-    const small3 = smallNums[2]
-    const small4 = smallNums[3]
-
-    useEffect(() => {
-        setState(prev => ({
-            ...prev,
-            totals: {
-                equals: false,
-                total: null,
-                next: null,
-                operation: null,
-            }
-        }));
-    }, []);
-
     const formatTime = (time: number) => {
         const minutes = Math.floor(time / 60);
         const seconds = time % 60;
         return `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
     };
 
+    useEffect(() => {
+        console.log('useEffect triggered: showConfetti:', state.showConfetti, 'finished:', state.finished);
+        // When confetti ends (showConfetti becomes false) and game is finished, show the modal
+        if (!state.showConfetti && state.finished) {
+            console.log('Opening modal');
+            setState(prev => ({
+                ...prev,
+                isModalOpen: true
+            }));
+        }
+    }, [state.showConfetti, state.finished]);
+
     const gameOver = () => {
+        console.log('Game over triggered');
         ReactGA.event({
             category: 'Game',
             action: 'Won',
@@ -308,6 +304,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
         let newStreak = state.todaysHintsUsed > 0 ? 0 :
             state.lastWon > yesterday ? state.currentStreak + 1 : 1;
 
+        // Set initial game over state
         setState(prev => ({
             ...prev,
             finished: true,
@@ -332,7 +329,9 @@ export const KeyPad: React.FC<KeyPadProps> = ({
             showConfetti: true
         }));
 
+        // Set a timeout to show modal after confetti
         setTimeout(() => {
+            console.log('Timeout reached, hiding confetti and opening modal');
             setState(prev => ({
                 ...prev,
                 showConfetti: false,
@@ -572,12 +571,104 @@ export const KeyPad: React.FC<KeyPadProps> = ({
         return state.showingHint && state.hintOperation === operation;
     };
 
-    let newNums = state.newNumbers.map((num, i) => {
-        return <Number solved={state.finished} newNum={true} big={false} isPlaying={state.isPlaying && !state.finished}
-                       onClick={() => handleClick(num.toString(), 7 + i)} value={num}
-                       used={state.usedKeys.includes(7 + i)}
-                       highlighted={isNumberHinted(num)}/>
-    });
+    let newNums = state.newNumbers.map((num, i) => (
+        <Number 
+            key={`newNum-${i}`}
+            solved={state.finished} 
+            newNum={true} 
+            big={false} 
+            isPlaying={state.isPlaying && !state.finished}
+            onClick={() => handleClick(num.toString(), 7 + i)} 
+            value={num}
+            used={state.usedKeys.includes(7 + i)}
+            highlighted={isNumberHinted(num)}
+        />
+    ));
+
+    // Add unique keys to Number components
+    const big1 = (
+        <Number 
+            key="big1"
+            solved={state.finished} 
+            newNum={false} 
+            big={true} 
+            isPlaying={state.isPlaying && !state.finished}
+            onClick={() => handleClick(bigNums[0].toString(), 1)} 
+            value={bigNums[0]}
+            used={state.usedKeys.includes(1)}
+            highlighted={isNumberHinted(bigNums[0])}
+        />
+    );
+
+    const big2 = (
+        <Number 
+            key="big2"
+            solved={state.finished} 
+            newNum={false} 
+            big={true} 
+            isPlaying={state.isPlaying && !state.finished}
+            onClick={() => handleClick(bigNums[1].toString(), 2)} 
+            value={bigNums[1]}
+            used={state.usedKeys.includes(2)}
+            highlighted={isNumberHinted(bigNums[1])}
+        />
+    );
+
+    const small1 = (
+        <Number 
+            key="small1"
+            solved={state.finished} 
+            newNum={false} 
+            big={false} 
+            isPlaying={state.isPlaying && !state.finished}
+            onClick={() => handleClick(smallNums[0].toString(), 3)} 
+            value={smallNums[0]}
+            used={state.usedKeys.includes(3)}
+            highlighted={isNumberHinted(smallNums[0])}
+        />
+    );
+
+    const small2 = (
+        <Number 
+            key="small2"
+            solved={state.finished} 
+            newNum={false} 
+            big={false} 
+            isPlaying={state.isPlaying && !state.finished}
+            onClick={() => handleClick(smallNums[1].toString(), 4)} 
+            value={smallNums[1]}
+            used={state.usedKeys.includes(4)}
+            highlighted={isNumberHinted(smallNums[1])}
+        />
+    );
+
+    const small3 = (
+        <Number 
+            key="small3"
+            solved={state.finished} 
+            newNum={false} 
+            big={false} 
+            isPlaying={state.isPlaying && !state.finished}
+            onClick={() => handleClick(smallNums[2].toString(), 5)} 
+            value={smallNums[2]}
+            used={state.usedKeys.includes(5)}
+            highlighted={isNumberHinted(smallNums[2])}
+        />
+    );
+
+    const small4 = (
+        <Number 
+            key="small4"
+            solved={state.finished} 
+            newNum={false} 
+            big={false} 
+            isPlaying={state.isPlaying && !state.finished}
+            onClick={() => handleClick(smallNums[3].toString(), 6)} 
+            value={smallNums[3]}
+            used={state.usedKeys.includes(6)}
+            highlighted={isNumberHinted(smallNums[3])}
+        />
+    );
 
     return (
         <div className="game-container">
@@ -629,30 +720,12 @@ export const KeyPad: React.FC<KeyPadProps> = ({
                         {newNums}
                     </div>
                     <div className="number-container">
-                        <Number solved={state.finished} newNum={false} big={true} isPlaying={state.isPlaying && !state.finished}
-                                onClick={() => handleClick(big1.toString(), 1)} value={big1}
-                                used={state.usedKeys.includes(1)}
-                                highlighted={isNumberHinted(big1)}/>
-                        <Number solved={state.finished} newNum={false} big={true} isPlaying={state.isPlaying && !state.finished}
-                                onClick={() => handleClick(big2.toString(), 2)} value={big2}
-                                used={state.usedKeys.includes(2)}
-                                highlighted={isNumberHinted(big2)}/>
-                        <Number solved={state.finished} newNum={false} big={false} isPlaying={state.isPlaying && !state.finished}
-                                onClick={() => handleClick(small1.toString(), 3)} value={small1}
-                                used={state.usedKeys.includes(3)}
-                                highlighted={isNumberHinted(small1)}/>
-                        <Number solved={state.finished} newNum={false} big={false} isPlaying={state.isPlaying && !state.finished}
-                                onClick={() => handleClick(small2.toString(), 4)} value={small2}
-                                used={state.usedKeys.includes(4)}
-                                highlighted={isNumberHinted(small2)}/>
-                        <Number solved={state.finished} newNum={false} big={false} isPlaying={state.isPlaying && !state.finished}
-                                onClick={() => handleClick(small3.toString(), 5)} value={small3}
-                                used={state.usedKeys.includes(5)}
-                                highlighted={isNumberHinted(small3)}/>
-                        <Number solved={state.finished} newNum={false} big={false} isPlaying={state.isPlaying && !state.finished}
-                                onClick={() => handleClick(small4.toString(), 6)} value={small4}
-                                used={state.usedKeys.includes(6)}
-                                highlighted={isNumberHinted(small4)}/>
+                        {big1}
+                        {big2}
+                        {small1}
+                        {small2}
+                        {small3}
+                        {small4}
                     </div>
                 </div>
                 <div className="game-board">
@@ -689,7 +762,7 @@ export const KeyPad: React.FC<KeyPadProps> = ({
                 show={state.isModalOpen}
                 clear={() => setState(prev => ({
                     ...prev,
-                    isModalOpen: false
+                    isModalOpen: false,
                 }))}
             />
             {state.finished && !state.isModalOpen && (

@@ -12,6 +12,7 @@ export const FinishedModal: React.FC<FinishedModalProps> = ({
     show,
     clear
 }) => {
+    console.log('FinishedModal render: show:', show);
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
     const [state, setState] = useState(() => {
@@ -82,6 +83,18 @@ https://sumble.onrender.com`;
     return (
         <div className={className} onClick={handleBackdropClick}>
             <div className="modal-main-cont">
+            <div className="modal-content">
+            {state.finished && (
+                        <div className="todays-score">
+                            <div className="time-display highlight">
+                                {formatTime(state.winningTime)}
+                            </div>
+                            <div className="hints-used">
+                                Hints Used Today: {state.todaysHintsUsed}
+                            </div>
+                        </div>
+                    )}
+                </div>
                 <div className="modal-stats">
                     <div className="stat-box">
                         <div className="stat-label">Games Won</div>
