@@ -19,9 +19,15 @@ export const Home: React.FC = () => {
         Cookies.set(cookieName, uuidv4());
     }
 
-    const [scores] = useState<Score>(() => 
-        JSON.parse(localStorage.getItem("scores") || "{}") as Score
-    );
+    const [scores] = useState<Score>(() => {
+        const savedState = localStorage.getItem("sumbleState");
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            return parsedState.score;
+        }
+        return {};
+    });
+
     const [numbers, setNumbers] = useState<Numbers>(() => {
         const gameNumbers = generateNumbers();
         return {
@@ -29,29 +35,29 @@ export const Home: React.FC = () => {
             hints: ""
         };
     });
+
     const [showModal, setShowModal] = useState<boolean>(scores.gamesPlayed === 0);
     const [showStatsModal, setShowStatsModal] = useState<boolean>(false);
     const [showHintsModal, setShowHintsModal] = useState<boolean>(false);
     const [refresh, setRefresh] = useState<boolean>(false);
-    const [currentStreak] = useState<number>(() => 
-        parseInt(localStorage.getItem("currentStreak") || "0")
-    );
-    const [maxStreak] = useState<number>(() => 
-        parseInt(localStorage.getItem("maxStreak") || "0")
-    );
 
     useEffect(() => {
         // Check if we need to generate new numbers (day changed)
-        const lastGenerated = localStorage.getItem("lastGenerated");
+        const savedState = localStorage.getItem("sumbleState");
         const today = new Date().setHours(0, 0, 0, 0);
+        let lastGenerated = today;
+
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            lastGenerated = parsedState.lastGenerated || 0;
+        }
         
-        if (!lastGenerated || parseInt(lastGenerated) < today) {
+        if (!lastGenerated || lastGenerated < today) {
             const gameNumbers = generateNumbers();
             setNumbers({
                 ...gameNumbers,
                 hints: ""
             });
-            localStorage.setItem("lastGenerated", today.toString());
         }
     }, []);
 
@@ -78,11 +84,6 @@ export const Home: React.FC = () => {
             <FinishedModal 
                 show={showStatsModal}
                 clear={() => setShowStatsModal(false)}
-                timeTaken={parseInt(localStorage.getItem("todaysTime") || "0")}
-                score={scores}
-                success={localStorage.getItem("finished") === "true"}
-                currentStreak={currentStreak}
-                maxStreak={maxStreak}
             />
             <HintsModal 
                 refresh={refresh} 

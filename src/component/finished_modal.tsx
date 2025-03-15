@@ -1,31 +1,26 @@
-import React, {useState} from "react";
-import {Score} from "./keypad";
+import React, {useState, useEffect} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faTimes, faCopy} from "@fortawesome/free-solid-svg-icons";
+import {faCopy} from "@fortawesome/free-solid-svg-icons";
 import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 
 export interface FinishedModalProps {
-    timeTaken: number;
-    score: Score;
-    clear: () => void;
-    success: boolean;
     show: boolean;
-    currentStreak: number;
-    maxStreak: number;
+    clear: () => void;
 }
 
 export const FinishedModal: React.FC<FinishedModalProps> = ({
-    success,
-    clear,
-    score,
-    timeTaken,
-    currentStreak,
-    maxStreak,
-    show
+    show,
+    clear
 }) => {
     const [showCopyMsg, setShowCopyMsg] = useState(false);
     const [msg, setMsg] = useState("");
-    const hintsUsedToday = parseInt(localStorage.getItem("hintsUsed") || "0");
+    const [state, setState] = useState(() => {
+        const savedState = localStorage.getItem("sumbleState");
+        if (savedState) {
+            return JSON.parse(savedState);
+        }
+        return null;
+    });
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {
@@ -40,10 +35,11 @@ export const FinishedModal: React.FC<FinishedModalProps> = ({
     };
 
     const getShareText = () => {
-        const formattedTime = formatTime(timeTaken);
+        if (!state) return "";
+        const formattedTime = formatTime(state.winningTime);
         return `🔢 ${new Date(Date.now()).toLocaleString().split(',')[0]} 🔢
-${success ? `Time: 🎉 ${formattedTime} 🎉
-Hints Used: ${hintsUsedToday} 🤔` : ""}
+${state.finished ? `Time: 🎉 ${formattedTime} 🎉
+Hints Used: ${state.todaysHintsUsed} 🤔` : ""}
 https://sumble.onrender.com`;
     };
 
@@ -68,59 +64,61 @@ https://sumble.onrender.com`;
 
     const className = show ? "modal-cont display-block" : "modal-cont display-none";
 
+    // Update state when localStorage changes
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const savedState = localStorage.getItem("sumbleState");
+            if (savedState) {
+                setState(JSON.parse(savedState));
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
+    if (!state) return null;
+
     return (
         <div className={className} onClick={handleBackdropClick}>
-            <div id="score-display" className="modal-main-cont">
+            <div className="modal-main-cont">
                 <div className="modal-header">
-                    <button className="modal-close-button" onClick={clear}>
-                        <FontAwesomeIcon icon={faTimes} />
-                    </button>
+                    <h2>{state.finished ? "Congratulations!" : "Statistics"}</h2>
+                    {showCopyMsg && <div className="copy-message">{msg}</div>}
                 </div>
 
-                <div className="modal-content">
-                    {success && (
-                        <div className="todays-score">
-                            <div className="time-display highlight">
-                                {formatTime(timeTaken)}
-                            </div>
-                            <div className="hints-used">
-                                Hints Used Today: {hintsUsedToday}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="streak-container">
-                        <div className="streak-box">
-                            <div className="streak-value">{currentStreak}</div>
-                            <div className="streak-label">Current Streak</div>
-                        </div>
-                        <div className="streak-box">
-                            <div className="streak-value">{maxStreak}</div>
-                            <div className="streak-label">Max Streak</div>
-                        </div>
+                <div className="modal-stats">
+                    <div className="stat-box">
+                        <div className="stat-label">Games Won</div>
+                        <div className="stat-value">{state.score.gamesWon}</div>
                     </div>
-
-                    <div className="modal-stats">
-                        <div className="stat-box">
-                            <div className="stat-label">Games Won</div>
-                            <div className="stat-value">{score.gamesWon}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-label">Games Played</div>
-                            <div className="stat-value">{score.gamesPlayed}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-label">Average Time</div>
-                            <div className="stat-value">{formatTime(Math.floor(score.averageTime))}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-label">Best Time</div>
-                            <div className="stat-value">{formatTime(score.bestTime)}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-label">Total Hints Used</div>
-                            <div className="stat-value">{score.hintsUsed || 0}</div>
-                        </div>
+                    <div className="stat-box">
+                        <div className="stat-label">Games Played</div>
+                        <div className="stat-value">{state.score.gamesPlayed}</div>
+                    </div>
+                    <div className="stat-box">
+                        <div className="stat-label">Average Time</div>
+                        <div className="stat-value">{formatTime(Math.floor(state.score.averageTime))}</div>
+                    </div>
+                    <div className="stat-box">
+                        <div className="stat-label">Best Time</div>
+                        <div className="stat-value">{formatTime(state.score.bestTime)}</div>
+                    </div>
+                    <div className="stat-box">
+                        <div className="stat-label">Current Streak</div>
+                        <div className="stat-value">{state.currentStreak || 0}</div>
+                    </div>
+                    <div className="stat-box">
+                        <div className="stat-label">Max Streak</div>
+                        <div className="stat-value">{state.maxStreak || 0}</div>
+                    </div>
+                    <div className="stat-box">
+                        <div className="stat-label">Today's Hints Used</div>
+                        <div className="stat-value">{state.todaysHintsUsed || 0}</div>
+                    </div>
+                    <div className="stat-box">
+                        <div className="stat-label">Total Hints Used</div>
+                        <div className="stat-value">{state.score.hintsUsed}</div>
                     </div>
                 </div>
 
